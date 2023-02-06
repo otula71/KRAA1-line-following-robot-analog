@@ -17,7 +17,7 @@ const uint8_t L_MOTOR2 = 8;
 const uint8_t R_MOTOR1 = 9;
 const uint8_t R_MOTOR2 = 10;
 
-const uint8_t ONOFF = 4;
+const uint8_t ONOFF = 2;
 #define TRIMR A6
 
 const uint8_t HC_TRIG = 1;
@@ -37,7 +37,7 @@ const uint8_t MIN_SPEED = 0;
 /*************************************************************************
 * ladění PID
 *************************************************************************/
-const float Kp = 0.000; //hodnota Proportional pro PID (např. 0.07)
+const float Kp = 0.100; //hodnota Proportional pro PID (např. 0.07)
 const float Ki = 0; //hodnota Integral pro PID (např. 0.0008)
 const float Kd = 0.0; //hodnota Derivative pro PID (např. 0.6)
 
@@ -53,7 +53,7 @@ int16_t lastError = 0;
 /*************************************************************************
 * Výchozí hodnoty
 *************************************************************************/
-uint8_t sensor[NUM_SENSORS] = {0, 0, 0, 0, 0};
+uint16_t sensor[NUM_SENSORS] = {0, 0, 0, 0, 0};
 
 
 /*************************************************************************
@@ -61,10 +61,11 @@ uint8_t sensor[NUM_SENSORS] = {0, 0, 0, 0, 0};
 *************************************************************************/
 boolean onoff = false;
 boolean cara_detekovana = false;
-uint32_t pozice = 0;
+int32_t pozice = STRED_SENZORU;
 int16_t error = 0;
 uint16_t minS[NUM_SENSORS];
 uint16_t maxS[NUM_SENSORS];
+uint8_t kalibracni_rychlost = 80;
 const uint16_t PREKAZKA = 500;
 
 /*************************************************************************

@@ -29,6 +29,8 @@ void setup() {
   #ifdef DEBUG
       Serial.begin(9600);
   #endif
+
+  kalibrace();
 }
 
 
@@ -122,7 +124,7 @@ void ovladani_motoru(uint8_t l, uint8_t r, boolean lf, boolean rf) {
 * Vrací:
 *  none
 *************************************************************************/
-void zastav(uint16_t t) { 
+void zastav(uint16_t t) {
     analogWrite(ENA, 0);
     analogWrite(ENB, 0);
     digitalWrite(L_MOTOR1, LOW);
@@ -150,20 +152,24 @@ void zastav(uint16_t t) {
 *  int -100, pokud je na krajních senzorech černá
 *  int z, pokud je na všech senzorech bílá
 *************************************************************************/
-int detekuj_caru(int16_t z) {
+int32_t detekuj_caru(int32_t z) {
   cara_detekovana = false;
   uint32_t soucet_hodnot = 0;
   uint16_t pocet_sens = 0;
   for(uint8_t i=0; i<NUM_SENSORS; i++){
   sensor[i] = analogRead(SENSOR[i]);
-  sensor[i]=constrain(map(sensor[i], minS[i], maxS[i],1000,0),0,1000);
-  cara_detekovana = (sensor[i]>200) ? true : false; //čáru vyhodnocuji od hodnoty 200, potřeba poladit
-  if(sensor[i]>50) { //připočítávám senzory, které zachytí jakous-takous hodnotu, také potřeba poladit
+  sensor[i]=constrain(map(sensor[i], minS[i], maxS[i],0,1000),0,1000);
+  DEBUG_PRINT(sensor[i]);DEBUG_PRINT("\t");
+  if(sensor[i]>500)cara_detekovana = true; //čáru vyhodnocuji od hodnoty 200, potřeba poladit
+    if(sensor[i]>50) { //připočítávám senzory, které zachytí jakous-takous hodnotu, také potřeba poladit
     soucet_hodnot += (uint32_t)sensor[i]*1000*i;
     pocet_sens += sensor[i]; //nedává to přesný výsledek, ale mohlo by to obstát
     }
   }
-  int16_t x = (sensor[0]>200 && sensor[4]>200) ? -100 : (cara_detekovana) ? soucet_hodnot/pocet_sens : (pozice < STRED_SENZORU) ? 0 : STRED_SENZORU*2;
+  DEBUG_PRINT("čára:");DEBUG_PRINT(cara_detekovana);DEBUG_PRINT("\t");
+  DEBUG_PRINT("Pozice:");DEBUG_PRINT(z);DEBUG_PRINT("\t");
+ // DEBUG_PRINTLN("");
+  int32_t x = (sensor[0]>500 && sensor[4]>500) ? -100 : (cara_detekovana) ? soucet_hodnot/pocet_sens : z;
   return x;
 }
 
@@ -181,10 +187,12 @@ int detekuj_caru(int16_t z) {
 *  none
 *************************************************************************/
 void jedeme_s_PID() {
-  int16_t pozice = detekuj_caru(pozice); //načti aktuální pozici
+  pozice = detekuj_caru(pozice); //načti aktuální pozici
+//  DEBUG_PRINT("pos2: ");DEBUG_PRINT(pozice);DEBUG_PRINT("\t");
   if (pozice == -100){zastav(1000);DEBUG_PRINTLN("Cílová čára");}//STOP
   else {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
+  DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
    float koef = nacti_trimr()/10230.0000;
   P = error;
   I = I + error;
@@ -197,8 +205,8 @@ void jedeme_s_PID() {
 
   ovladani_motoru(rychlost_L, rychlost_R, true, true);
 
-  DEBUG_PRINT("Pozice: ");DEBUG_PRINTLN(error);
-  DEBUG_PRINT("Trimr/100: ");DEBUG_PRINTLN(koef*100);
+  //DEBUG_PRINT("Pozice: ");DEBUG_PRINTLN(error);
+  //DEBUG_PRINT("Trimr/100: ");DEBUG_PRINTLN(koef*100);
   }
 }
 
@@ -299,3 +307,49 @@ uint16_t rozhledni_se(char S) {
       break;
     }
   }
+
+/*************************************************************************
+* Název funkce: kalibrace
+**************************************************************************
+* Funkce pro kalibraci senzorů - změří rozsah, který dávají jednotlivé  
+* senzory a "normalizuje" ho na rozsah 0-1000
+* 
+* Parametry:
+*  none
+* 
+* Vrací:
+*  none
+*  přiřazuje hodnoty globálním proměnným
+*************************************************************************/
+void kalibrace() {
+  #ifdef DEBUG
+  delay(500);
+  #endif
+  DEBUG_PRINTLN(" ");
+  DEBUG_PRINTLN("Kalibrace - projdi senzory...");
+  uint32_t time0 = millis();
+  uint32_t time1 = time0;
+//  uint32_t timeL;
+  for(uint8_t i=0; i<NUM_SENSORS; i++){
+    sensor[i]=analogRead(SENSOR[i]);
+    minS[i]=sensor[i];
+    maxS[i]=sensor[i];
+    }
+  while((millis()-time0)<=10000){
+    for(byte i=0; i<NUM_SENSORS; i++){
+      sensor[i]=analogRead(SENSOR[i]);
+      if(sensor[i]<minS[i]) minS[i]=sensor[i];
+      if(sensor[i]>maxS[i]) maxS[i]=sensor[i];
+    }
+/*    timeL = millis();
+    if ((timeL-time1)>=100){
+      BlinkX();
+      Tm1 = TmL;
+    }*/
+    ovladani_motoru(0, kalibracni_rychlost, true, true);
+    }
+    #ifdef DEBUG
+    DEBUG_PRINTLN("Kalibrace dokončena: ");
+    for (uint8_t i=0; i<NUM_SENSORS;i++){DEBUG_PRINT("senzor "); DEBUG_PRINT(i); DEBUG_PRINT(" min: "); DEBUG_PRINT(minS[i]); DEBUG_PRINT(" -- max: "); DEBUG_PRINTLN(maxS[i]);}
+    #endif
+}
