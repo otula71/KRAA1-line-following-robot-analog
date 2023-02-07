@@ -40,7 +40,7 @@ const uint8_t MIN_SPEED = 0;
 const float Kp = 0.100; //hodnota Proportional pro PID (např. 0.07)
                         // 2k*0.1275=255, 2k*0.07=140
 const float Ki = 0; //hodnota Integral pro PID (např. 0.0008)
-const float Kd = 0.0; //hodnota Derivative pro PID (např. 0.6)
+const float Kd = 0.0; //hodnota Derivative pro PID (např. 10-20 * Kp)
 
 /*************************************************************************
 * proměnné pro PID
