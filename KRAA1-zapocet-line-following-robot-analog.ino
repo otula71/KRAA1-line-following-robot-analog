@@ -200,9 +200,15 @@ void jedeme_s_PID() {
   lastError = error;
   int16_t korekce_rychlosti = P*(Kp+koef) + I*Ki + D*Kd; //výpočet PID s měřením 
 //  int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID korekce rychlosti 
+
+/* MAXIMÁLNÍ RYCHLOST **********/
+//  MED_SPEED_L = MAX_SPEED_L - abs(korekce_rychlosti);
+//  MED_SPEED_R = MAX_SPEED_R - abs(korekce_rychlosti);
+/*******************************/
+
   uint8_t rychlost_L = constrain(MED_SPEED_L + korekce_rychlosti,0,MAX_SPEED_L);
   uint8_t rychlost_R = constrain(MED_SPEED_R - korekce_rychlosti,0,MAX_SPEED_R);
-
+   
   ovladani_motoru(rychlost_L, rychlost_R, true, true);
 
   //DEBUG_PRINT("Pozice: ");DEBUG_PRINTLN(error);
