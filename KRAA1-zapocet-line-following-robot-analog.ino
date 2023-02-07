@@ -319,7 +319,7 @@ uint16_t rozhledni_se(char S) {
 * 
 * Vrací:
 *  none
-*  přiřazuje hodnoty globálním proměnným
+*  přiřazuje hodnoty polím minS[] a maxS[]
 *************************************************************************/
 void kalibrace() {
   #ifdef DEBUG
@@ -352,4 +352,5 @@ void kalibrace() {
     DEBUG_PRINTLN("Kalibrace dokončena: ");
     for (uint8_t i=0; i<NUM_SENSORS;i++){DEBUG_PRINT("senzor "); DEBUG_PRINT(i); DEBUG_PRINT(" min: "); DEBUG_PRINT(minS[i]); DEBUG_PRINT(" -- max: "); DEBUG_PRINTLN(maxS[i]);}
     #endif
+    zastav(100);
 }
