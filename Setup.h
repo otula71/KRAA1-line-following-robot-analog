@@ -16,6 +16,8 @@ const uint8_t L_MOTOR1 = 7;
 const uint8_t L_MOTOR2 = 8;
 const uint8_t R_MOTOR1 = 9;
 const uint8_t R_MOTOR2 = 10;
+const uint8_t LED_RED = 11;
+const uint8_t LED_BLUE = 12;
 const uint8_t STBY = 13;
 
 const uint8_t ONOFF = 2;
@@ -96,8 +98,8 @@ const uint8_t KUK_VLEVO = 40;
 * D8    můstek 2 ***
 * D9 ~  můstek 3 ***
 * D10 ~ můstek 4 ***
-* D11 ~ 
-* D12 
+* D11 ~ červená LED
+* D12   modrá LED
 * D13   můstek Standby
 * A0    senzor LL ***
 * A1    senzor L ***
