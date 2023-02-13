@@ -16,9 +16,11 @@ const uint8_t L_MOTOR1 = 7;
 const uint8_t L_MOTOR2 = 8;
 const uint8_t R_MOTOR1 = 9;
 const uint8_t R_MOTOR2 = 10;
+const uint8_t STBY = 13;
 
 const uint8_t ONOFF = 2;
-#define TRIMR A6
+#define TRIMR1 A5
+#define TRIMR2 A6
 
 const uint8_t HC_TRIG = 1;
 const uint8_t HC_ECHO = 2;
@@ -28,8 +30,8 @@ const uint8_t SERVO = 3;
 /*************************************************************************
 * nastavení hodnot pro rychlost
 *************************************************************************/
-const uint8_t MAX_SPEED_L = 255;
-const uint8_t MAX_SPEED_R = 255;
+uint8_t MAX_SPEED_L = 255;
+uint8_t MAX_SPEED_R = 255;
 uint8_t MED_SPEED_L = 90;
 uint8_t MED_SPEED_R = 90;
 const uint8_t MIN_SPEED = 0;
@@ -96,13 +98,13 @@ const uint8_t KUK_VLEVO = 40;
 * D10 ~ můstek 4 ***
 * D11 ~ 
 * D12 
-* D13
+* D13   můstek Standby
 * A0    senzor LL ***
 * A1    senzor L ***
 * A2    senzor C ***
 * A3    senzor R ***
 * A4    senzor RR ***
-* A5    
-* A6    trimr  *** //nefunguje jako digitální pin
+* A5    trimr 1
+* A6    trimr 2 *** //nefunguje jako digitální pin
 * A7           //nefunguje jako digitální pin
 *******************************************************************/
