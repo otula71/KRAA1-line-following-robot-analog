@@ -20,15 +20,14 @@ void setup() {
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
   pinMode(STBY, OUTPUT);
-  stbyoff(FALSE);
   pinMode(L_MOTOR1, OUTPUT);
   pinMode(L_MOTOR2, OUTPUT);
   pinMode(R_MOTOR1, OUTPUT);
   pinMode(R_MOTOR2, OUTPUT);
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
   for(uint8_t i=0;i<NUM_SENSORS;i++){pinMode(SENSOR[i], INPUT);}
-  
+  stbyoff(false);
   servo_oci.attach(SERVO);
   
   #ifdef DEBUG
@@ -57,12 +56,12 @@ void loop() {
     onoff =! onoff; //při stisku tlačítka přepneme stav
     if(onoff == true) {
       DEBUG_PRINTLN("Jedeme!");
-      stbyoff(TRUE);
+      stbyoff(true);
       delay(1700); //chvilka strpení před startem
     }
     else {
       DEBUG_PRINTLN("Zastavujeme!");
-      stbyoff(FALSE);
+      stbyoff(false);
       delay(50);
     }
   }
@@ -202,7 +201,8 @@ void jedeme_s_PID() {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
   DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
    Kp = nacti_trimr(1)/10230.0000;
-   MAX_SPEED = nacti_trimr(2)/4;
+   MAX_SPEED_L = nacti_trimr(2)/4;
+   MAX_SPEED_R = MAX_SPEED_L;
   P = error;
   I = I + error;
   D = error - lastError;
@@ -297,7 +297,7 @@ uint16_t nacti_trimr(uint8_t x) {
       break;
     default:
       return analogRead(TRIMR2);
-      break
+      break;
   }
 }
 
@@ -349,7 +349,7 @@ void kalibrace() {
   #endif
   DEBUG_PRINTLN(" ");
   DEBUG_PRINTLN("Kalibrace - projdi senzory...");
-  stbyoff(TRUE);
+  stbyoff(true);
   uint32_t time0 = millis();
   uint32_t time1 = time0;
 //  uint32_t timeL;
@@ -376,31 +376,10 @@ void kalibrace() {
     for (uint8_t i=0; i<NUM_SENSORS;i++){DEBUG_PRINT("senzor "); DEBUG_PRINT(i); DEBUG_PRINT(" min: "); DEBUG_PRINT(minS[i]); DEBUG_PRINT(" -- max: "); DEBUG_PRINTLN(maxS[i]);}
     #endif
     zastav(100);
-    stbyoff(FALSE);
+//    stbyoff(false);
 }
 
 
-/*************************************************************************
-* Název funkce: trimr(1|2)
-**************************************************************************
-* načte hodnotu z trimru 1 nebo 2
-* 
-* Parametry:
-*  1|2
-* 
-* Vrací:
-*  uint16_t 0-1023
-*************************************************************************/
-
-uint16_t trimr(uint8_t x){
-  switch (x) {
-    case 1:
-      return(analogRead(TRIMR1));
-      break;
-    default:
-      return(analogRead(TRIMR2));
-      break;
-}
 
 /*************************************************************************
 * Název funkce: stbyoff(BOOL)
@@ -415,7 +394,7 @@ uint16_t trimr(uint8_t x){
 *************************************************************************/
 
 void stbyoff(boolean x){
-  if !(x) {digitalWrite(STBY,HIGH);}
+  if (!x) {digitalWrite(STBY,HIGH);}
   else {digitalWrite(STBY,LOW);}
 }
   
@@ -433,19 +412,22 @@ void stbyoff(boolean x){
 *************************************************************************/
 
 void kontrola_kalibrace(){
-  boolean x = TRUE;
+  boolean x = true;
   for (uint8_t i=0; i<NUM_SENSORS;i++){
-    if (maxS[i] - minS[i] < 400) {x=FALSE;}
+    if (maxS[i] - minS[i] < 400) {x=false;}
   }
   if (x) {
     DEBUG_PRINTLN("Kalibrace OK");
-    digitalWrite(LED_BLUE, HIGH);delay(1000);digitalWrite(LED_BLUE, LOW);
+    digitalWrite(LED_BLUE, HIGH);
+    delay(1000);
+    digitalWrite(LED_BLUE, LOW);
   }
   else {
     DEBUG_PRINTLN("Chybná kalibrace, spouštím znovu!");
     uint32_t time0 = millis();
     while((millis()-time0)<=10000){digitalWrite(LED_RED,!digitalRead(LED_RED));delay(50);}
     digitalWrite(LED_RED,HIGH); delay(1000);digitalWrite(LED_RED,LOW);
-    kalibrace();}
+    kalibrace();
+    }
 }
   
