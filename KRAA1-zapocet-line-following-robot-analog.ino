@@ -201,17 +201,18 @@ void jedeme_s_PID() {
   else {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
   DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
-   float koef = nacti_trimr()/10230.0000;
+   Kp = nacti_trimr(1)/10230.0000;
+   MAX_SPEED = nacti_trimr(2)/4;
   P = error;
   I = I + error;
   D = error - lastError;
   lastError = error;
-  int16_t korekce_rychlosti = P*(Kp+koef) + I*Ki + D*Kd; //výpočet PID s měřením 
+  int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID s měřením 
 //  int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID korekce rychlosti 
 
 /* MAXIMÁLNÍ RYCHLOST **********/
-//  MED_SPEED_L = MAX_SPEED_L - abs(korekce_rychlosti);
-//  MED_SPEED_R = MAX_SPEED_R - abs(korekce_rychlosti);
+  MED_SPEED_L = MAX_SPEED_L - abs(korekce_rychlosti);
+  MED_SPEED_R = MAX_SPEED_R - abs(korekce_rychlosti);
 /*******************************/
 
   uint8_t rychlost_L = constrain(MED_SPEED_L + korekce_rychlosti,0,MAX_SPEED_L);
@@ -277,20 +278,27 @@ uint16_t prekazka() {
 }
 
 /*************************************************************************
-* Název funkce: nacti_trimr
+* Název funkce: nacti_trimr(1|2)
 **************************************************************************
 * Funkce pro ladění pohybu
 * čte hodnotu z připojeného trimru
 * načítá se pouze při ladění
 * 
 * Parametry:
-*  none
+*  vyber trimr 1 nebo 2
 * 
 * Vrací:
 *  uint16_t: 0-1023
 *************************************************************************/
-uint16_t nacti_trimr() { 
-  return analogRead(TRIMR);
+uint16_t nacti_trimr(uint8_t x) { 
+  switch (x) {
+    case 1:
+      return analogRead(TRIMR1);
+      break;
+    default:
+      return analogRead(TRIMR2);
+      break
+  }
 }
 
 /*************************************************************************
