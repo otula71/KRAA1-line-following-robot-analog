@@ -14,14 +14,19 @@
 void setup() {
   pinMode(HC_TRIG, OUTPUT);
   pinMode(HC_ECHO, INPUT);
-  pinMode(TRIMR, INPUT);
+  pinMode(TRIMR1, INPUT);
+  pinMode(TRIMR2, INPUT);
   pinMode(ONOFF, INPUT);
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
+  pinMode(STBY, OUTPUT);
+  stbyoff(FALSE);
   pinMode(L_MOTOR1, OUTPUT);
   pinMode(L_MOTOR2, OUTPUT);
   pinMode(R_MOTOR1, OUTPUT);
   pinMode(R_MOTOR2, OUTPUT);
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
   for(uint8_t i=0;i<NUM_SENSORS;i++){pinMode(SENSOR[i], INPUT);}
   
   servo_oci.attach(SERVO);
@@ -31,6 +36,7 @@ void setup() {
   #endif
 
   kalibrace();
+  kontrola_kalibrace();
 }
 
 
@@ -333,6 +339,7 @@ void kalibrace() {
   #endif
   DEBUG_PRINTLN(" ");
   DEBUG_PRINTLN("Kalibrace - projdi senzory...");
+  stbyoff(TRUE);
   uint32_t time0 = millis();
   uint32_t time1 = time0;
 //  uint32_t timeL;
@@ -359,4 +366,76 @@ void kalibrace() {
     for (uint8_t i=0; i<NUM_SENSORS;i++){DEBUG_PRINT("senzor "); DEBUG_PRINT(i); DEBUG_PRINT(" min: "); DEBUG_PRINT(minS[i]); DEBUG_PRINT(" -- max: "); DEBUG_PRINTLN(maxS[i]);}
     #endif
     zastav(100);
+    stbyoff(OFF);
 }
+
+
+/*************************************************************************
+* Název funkce: trimr(1|2)
+**************************************************************************
+* načte hodnotu z trimru 1 nebo 2
+* 
+* Parametry:
+*  1|2
+* 
+* Vrací:
+*  uint16_t 0-1023
+*************************************************************************/
+
+uint16_t trimr(uint8_t x){
+  switch (x) {
+    case 1:
+      return(analogRead(TRIMR1));
+      break;
+    default:
+      return(analogRead(TRIMR2));
+      break;
+}
+
+/*************************************************************************
+* Název funkce: stbyoff(BOOL)
+**************************************************************************
+* vypíná a zapíná stanby motorů
+* 
+* Parametry:
+*  TRUE|FALSE - při TRUE motory běží
+* 
+* Vrací:
+*  none
+*************************************************************************/
+
+void stbyoff(boolean x){
+  if !(x) {digitalWrite(STBY,HIGH);}
+  else {digitalWrite(STBY,LOW);}
+}
+  
+/*************************************************************************
+* Název funkce: kontrola_kalibrace()
+**************************************************************************
+* kontroluje, zda kalibrace dala rozumné výsledky
+* Pokud nedala, volá ji znovu
+* 
+* Parametry:
+*  none
+* 
+* Vrací:
+*  none
+*************************************************************************/
+
+void kontrola_kalibrace(){
+  boolean x = TRUE;
+  for (uint8_t i=0; i<NUM_SENSORS;i++){
+    if (maxS[i] - minS[i] < 400) {x=FALSE;}
+  }
+  if (x) {
+    DEBUG_PRINTLN("Kalibrace OK");
+    digitalWrite(LED_BLUE, HIGH);delay(1000);digitalWrite(LED_BLUE, LOW);
+  }
+  else {
+    DEBUG_PRINTLN("Chybná kalibrace, spouštím znovu!");
+    uint32_t time0 = millis();
+    while((millis()-time0)<=10000){digitalWrite(LED_RED,!digitalRead(LED_RED));delay(50);}
+    digitalWrite(LED_RED,HIGH); delay(1000);digitalWrite(LED_RED,LOW);
+    kalibrace();}
+}
+  
