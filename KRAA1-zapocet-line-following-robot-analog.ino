@@ -57,10 +57,12 @@ void loop() {
     onoff =! onoff; //při stisku tlačítka přepneme stav
     if(onoff == true) {
       DEBUG_PRINTLN("Jedeme!");
+      stbyoff(TRUE);
       delay(1700); //chvilka strpení před startem
     }
     else {
       DEBUG_PRINTLN("Zastavujeme!");
+      stbyoff(FALSE);
       delay(50);
     }
   }
@@ -366,7 +368,7 @@ void kalibrace() {
     for (uint8_t i=0; i<NUM_SENSORS;i++){DEBUG_PRINT("senzor "); DEBUG_PRINT(i); DEBUG_PRINT(" min: "); DEBUG_PRINT(minS[i]); DEBUG_PRINT(" -- max: "); DEBUG_PRINTLN(maxS[i]);}
     #endif
     zastav(100);
-    stbyoff(OFF);
+    stbyoff(FALSE);
 }
 
 
