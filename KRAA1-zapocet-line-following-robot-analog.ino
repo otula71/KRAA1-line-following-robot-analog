@@ -146,12 +146,7 @@ void ovladani_motoru(uint8_t l, uint8_t r, char f) {
 *  none
 *************************************************************************/
 void zastav(uint16_t t) {
-    analogWrite(ENA, 0);
-    analogWrite(ENB, 0);
-    digitalWrite(L_MOTOR1, LOW);
-    digitalWrite(L_MOTOR2, LOW);
-    digitalWrite(R_MOTOR1, LOW);
-    digitalWrite(R_MOTOR2, LOW);
+    ovladani_motoru(0,0,'b');
     delay(t);
   }
 
