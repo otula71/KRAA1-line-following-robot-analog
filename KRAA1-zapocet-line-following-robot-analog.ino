@@ -28,14 +28,13 @@ void setup() {
   pinMode(LED_BLUE, OUTPUT);
   for(uint8_t i=0;i<NUM_SENSORS;i++){pinMode(SENSOR[i], INPUT);}
   stbyoff(false);
-  servo_oci.attach(SERVO);
-  
+  //servo_oci.attach(SERVO);
   #ifdef DEBUG
       Serial.begin(9600);
   #endif
 
-  kalibrace();
-  kontrola_kalibrace();
+  while (!kontrola_kalibrace()){kalibrace();}
+  
 }
 
 
@@ -57,16 +56,25 @@ void loop() {
     if(onoff == true) {
       DEBUG_PRINTLN("Jedeme!");
       stbyoff(true);
-      delay(1700); //chvilka strpení před startem
+      pulse_led(1700, LED_BLUE); //chvilka strpení před startem
     }
     else {
       DEBUG_PRINTLN("Zastavujeme!");
       stbyoff(false);
+      digitalWrite(LED_BLUE,HIGH);
+      digitalWrite(LED_RED,LOW);
       delay(50);
     }
   }
   
   if (onoff == true) {
+    if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
+    //delay(10);
+    digitalWrite(LED_BLUE, LOW);
+    }
+    else {digitalWrite(LED_RED, LOW);
+    //delay(10);
+    digitalWrite(LED_BLUE, HIGH);};
     jedeme_s_PID(); //jedeme
   }
   else {
@@ -82,44 +90,50 @@ void loop() {
 * Parametry:
 *  int l: od 0 do 255; rychlost levého motoru
 *  int r: od 0 do 255; rychlost pravého motoru
-*  boolean lf, rf; true je směr dopředu, false dozadu
+*  char f; f: dopředu, r: dozadu, b: zastavit, s: prudce zastavit
 * 
 * Vrací:
 *  none
 *************************************************************************/
-void ovladani_motoru(uint8_t l, uint8_t r, boolean lf, boolean rf) { 
+void ovladani_motoru(uint8_t l, uint8_t r, char f) { 
+  switch (f)  {
+    case 'f':
     analogWrite(ENA, l);
     analogWrite(ENB, r);
-  if(lf && rf)  {
     digitalWrite(L_MOTOR1, HIGH);
     digitalWrite(L_MOTOR2, LOW);
     digitalWrite(R_MOTOR1, HIGH);
     digitalWrite(R_MOTOR2, LOW);
-  }
+    break;
 
-  else if(!lf && rf) {
+    case 'r':
+    analogWrite(ENA, l);
+    analogWrite(ENB, r);
     digitalWrite(L_MOTOR1, LOW);
+    digitalWrite(L_MOTOR2, HIGH);
+    digitalWrite(R_MOTOR1, LOW);
+    digitalWrite(R_MOTOR2, HIGH);
+    break;
+
+    case 's':
+    digitalWrite(ENA, LOW);
+    digitalWrite(ENB, LOW);
+    digitalWrite(L_MOTOR1, HIGH);
     digitalWrite(L_MOTOR2, HIGH);
     digitalWrite(R_MOTOR1, HIGH);
-    digitalWrite(R_MOTOR2, LOW);
-  }
+    digitalWrite(R_MOTOR2, HIGH);
+    break;
 
-  else if(lf && !rf) { 
-    digitalWrite(L_MOTOR1, HIGH);
+    case 'b':
+    digitalWrite(ENA, HIGH);
+    digitalWrite(ENB, HIGH);
+    digitalWrite(L_MOTOR1, LOW);
     digitalWrite(L_MOTOR2, LOW);
     digitalWrite(R_MOTOR1, LOW);
-    digitalWrite(R_MOTOR2, HIGH);
+    digitalWrite(R_MOTOR2, LOW);
+    break;
   }
-
-  else if(!lf && !rf) {
-    digitalWrite(L_MOTOR1, LOW);
-    digitalWrite(L_MOTOR2, HIGH);
-    digitalWrite(R_MOTOR1, LOW);
-    digitalWrite(R_MOTOR2, HIGH);
-  }
-
 }
-
 /*************************************************************************
 * Název funkce: zastav
 **************************************************************************
@@ -208,7 +222,6 @@ void jedeme_s_PID() {
   D = error - lastError;
   lastError = error;
   int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID s měřením 
-//  int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID korekce rychlosti 
 
 /* MAXIMÁLNÍ RYCHLOST **********/
   MED_SPEED_L = MAX_SPEED_L - abs(korekce_rychlosti);
@@ -218,7 +231,7 @@ void jedeme_s_PID() {
   uint8_t rychlost_L = constrain(MED_SPEED_L + korekce_rychlosti,0,MAX_SPEED_L);
   uint8_t rychlost_R = constrain(MED_SPEED_R - korekce_rychlosti,0,MAX_SPEED_R);
    
-  ovladani_motoru(rychlost_L, rychlost_R, true, true);
+  ovladani_motoru(rychlost_L, rychlost_R, 'f');
 
   //DEBUG_PRINT("Pozice: ");DEBUG_PRINTLN(error);
   //DEBUG_PRINT("Trimr/100: ");DEBUG_PRINTLN(koef*100);
@@ -242,11 +255,11 @@ void jedeme_s_PID() {
 void zatoc(char smer, uint8_t spd, uint16_t cas) { //Turning setup
   switch(smer) {
     case 'L':
-      ovladani_motoru(constrain(MED_SPEED_L-spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R+spd,MIN_SPEED, MAX_SPEED_R), true, true);
+      ovladani_motoru(constrain(MED_SPEED_L-spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R+spd,MIN_SPEED, MAX_SPEED_R), 'f');
       delay(cas);
       break;
     case 'R':
-      ovladani_motoru(constrain(MED_SPEED_L+spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R-spd,MIN_SPEED, MAX_SPEED_R), true, true);
+      ovladani_motoru(constrain(MED_SPEED_L+spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R-spd,MIN_SPEED, MAX_SPEED_R), 'f');
       delay(cas);
       break;
   }
@@ -272,8 +285,6 @@ uint16_t prekazka() {
   delayMicroseconds(5);
   digitalWrite(HC_TRIG, LOW);
   uint16_t odezva = pulseIn(HC_ECHO, HIGH);
-  DEBUG_PRINT("Odezva: ");DEBUG_PRINTLN(odezva);
-//  boolean x = (odezva > PREKAZKA) ? false : true;
   return odezva;
 }
 
@@ -311,7 +322,7 @@ uint16_t nacti_trimr(uint8_t x) {
 * 
 * Vrací:
 *  uint16_t: vzdálenost objektu v zadaném směru
-*************************************************************************/
+*************************************************************************
 uint16_t rozhledni_se(char S) {
   switch (S) {
     case 'L':
@@ -329,6 +340,7 @@ uint16_t rozhledni_se(char S) {
       break;
     }
   }
+  */
 
 /*************************************************************************
 * Název funkce: kalibrace
@@ -364,19 +376,13 @@ void kalibrace() {
       if(sensor[i]<minS[i]) minS[i]=sensor[i];
       if(sensor[i]>maxS[i]) maxS[i]=sensor[i];
     }
-/*    timeL = millis();
-    if ((timeL-time1)>=100){
-      BlinkX();
-      Tm1 = TmL;
-    }*/
-    ovladani_motoru(0, kalibracni_rychlost, true, true);
+    ovladani_motoru(0, kalibracni_rychlost, 'f');
     }
     #ifdef DEBUG
     DEBUG_PRINTLN("Kalibrace dokončena: ");
     for (uint8_t i=0; i<NUM_SENSORS;i++){DEBUG_PRINT("senzor "); DEBUG_PRINT(i); DEBUG_PRINT(" min: "); DEBUG_PRINT(minS[i]); DEBUG_PRINT(" -- max: "); DEBUG_PRINTLN(maxS[i]);}
     #endif
     zastav(100);
-//    stbyoff(false);
 }
 
 
@@ -408,26 +414,39 @@ void stbyoff(boolean x){
 *  none
 * 
 * Vrací:
-*  none
+*  boolean TRUE|FALSE
 *************************************************************************/
 
-void kontrola_kalibrace(){
+boolean kontrola_kalibrace(){
   boolean x = true;
   for (uint8_t i=0; i<NUM_SENSORS;i++){
-    if (maxS[i] - minS[i] < 400) {x=false;}
+    if (maxS[i] - minS[i] < 300) {x=false;}
   }
   if (x) {
     DEBUG_PRINTLN("Kalibrace OK");
     digitalWrite(LED_BLUE, HIGH);
-    delay(1000);
-    digitalWrite(LED_BLUE, LOW);
   }
   else {
-    DEBUG_PRINTLN("Chybná kalibrace, spouštím znovu!");
-    uint32_t time0 = millis();
-    while((millis()-time0)<=10000){digitalWrite(LED_RED,!digitalRead(LED_RED));delay(50);}
-    digitalWrite(LED_RED,HIGH); delay(1000);digitalWrite(LED_RED,LOW);
-    kalibrace();
+    DEBUG_PRINTLN("Chybná kalibrace");
+    pulse_led(4000,LED_RED);
+    digitalWrite(LED_RED,HIGH); delay(2000);digitalWrite(LED_RED,LOW);
     }
+    return x;
 }
-  
+
+/*************************************************************************
+* Název funkce: pulse_led(čas, led)
+**************************************************************************
+* bliká pulzně s vybranou LED po zadanou dobu (ms)
+* 
+* Parametry:
+*  int čas (ms)
+*  led (LED_BLUE|LED_RED)
+* 
+* Vrací:
+*  none
+*************************************************************************/
+void pulse_led(uint16_t t, uint8_t led){
+    uint32_t time0 = millis();
+    while((millis()-time0)<=t){digitalWrite(led, HIGH);delay(5);digitalWrite(led, LOW);delay(300);}
+}
