@@ -1,7 +1,7 @@
 #ifndef SETUP_H
 #define SETUP_H
 
-#define DEBUG       // zakomentuj před finální kompilací, 
+//#define DEBUG       // zakomentuj před finální kompilací, 
 
 /*************************************************************************
 * připojení k Arduinu
@@ -20,14 +20,14 @@ const uint8_t LED_RED = 11;
 const uint8_t LED_BLUE = 12;
 const uint8_t STBY = 13;
 
-const uint8_t ONOFF = 2;
+const uint8_t ONOFF = 4;
 #define TRIMR1 A5
 #define TRIMR2 A6
 
-const uint8_t HC_TRIG = 1;
+const uint8_t HC_TRIG = 0;
 const uint8_t HC_ECHO = 2;
 
-const uint8_t SERVO = 3;
+//const uint8_t SERVO = 3;
 
 /*************************************************************************
 * nastavení hodnot pro rychlost
@@ -71,24 +71,25 @@ int16_t error = 0;
 uint16_t minS[NUM_SENSORS];
 uint16_t maxS[NUM_SENSORS];
 uint8_t kalibracni_rychlost = 80;
-const uint16_t PREKAZKA = 500;
+const uint16_t PREKAZKA = 1000;
 
 /*************************************************************************
 * Servo motorek pro čidlo vzdálenosti
-*************************************************************************/
+*************************************************************************
 #include <Servo.h> 
 Servo servo_oci;
 const uint8_t KUK_VPRAVO = 140;
 const uint8_t KUK_ROVNE = 90;
 const uint8_t KUK_VLEVO = 40;
+*/
 
 #endif
 
 /*************************************************************************
 * PINOUT Arduino nano
 **************************************************************************
-* D0               (pin TX)
-* D1    HC trigger ***(pin RX)
+* D0    HC trigger ***  (pin RX)
+* D1                    (pin TX)
 * D2    HC echo ***
 * D3 ~  servo pro natáčení "očiček" (oranžový kablík) (red+, brown GND) ***
 * D4    tlačítko on/off ***
