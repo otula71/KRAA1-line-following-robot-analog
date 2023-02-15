@@ -238,6 +238,30 @@ void jedeme_s_PID() {
   }
 }
 
+
+/*************************************************************************
+* Název funkce: jedeme_stupid
+**************************************************************************
+* Funkce pro ovládání robota pomocí algoritmu kačena.
+* Záchranná funkce, kdyby to nešlo doladit :-)))))
+* 
+* Parametry:
+*  none
+* 
+* Vrací:
+*  none
+*************************************************************************/
+void jedeme_stupid() {
+  pozice = detekuj_caru(pozice); //načti aktuální pozici
+   MED_SPEED_L = nacti_trimr(2)/4;
+   MED_SPEED_R = MED_SPEED_L;
+  if (pozice == -100){zastav(1000);DEBUG_PRINTLN("Cílová čára");}//STOP
+  else if (pozice>2000){ovladani_motoru(MED_SPEED_L, 0, 'f');}
+  else if (pozice<2000){ovladani_motoru(0, MED_SPEED_R, 'f');}
+  else {ovladani_motoru(MED_SPEED_L, MED_SPEED_R, 'f');}
+}
+
+
 /*************************************************************************
 * Název funkce: zatoc
 **************************************************************************
