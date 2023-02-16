@@ -71,11 +71,12 @@ void loop() {
   if (onoff == true) {
     if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
     //delay(10);
-    digitalWrite(LED_BLUE, LOW);
+    //digitalWrite(LED_BLUE, LOW);
     }
     else {digitalWrite(LED_RED, LOW);
     //delay(10);
-    digitalWrite(LED_BLUE, HIGH);};
+    //digitalWrite(LED_BLUE, HIGH);
+    };
     jedeme_s_PID(); //jedeme
     //jedeme_stupid();
   }
@@ -172,21 +173,21 @@ void zastav(uint16_t t) {
 int32_t detekuj_caru(int32_t z) {
   cara_detekovana = false;
   uint32_t soucet_hodnot = 0;
-  uint8_t pocet_sens = 0;
+  uint16_t pocet_sens = 0;
   for(uint8_t i=0; i<NUM_SENSORS; i++){
   sensor[i] = analogRead(SENSOR[i]);
   sensor[i]=constrain(map(sensor[i], minS[i], maxS[i],0,1000),0,1000);
-  DEBUG_PRINT(sensor[i]);DEBUG_PRINT("\t");
+  //DEBUG_PRINT(sensor[i]);DEBUG_PRINT("\t");
   if(sensor[i]>500)cara_detekovana = true; //čáru vyhodnocuji od hodnoty 200, potřeba poladit
     if(sensor[i]>50) { //připočítávám senzory, které zachytí jakous-takous hodnotu, také potřeba poladit
     soucet_hodnot += (uint32_t)sensor[i]*1000*i;
     pocet_sens += sensor[i]; //nedává to přesný výsledek, ale mohlo by to obstát
     }
   }
-  DEBUG_PRINT("čára:");DEBUG_PRINT(cara_detekovana);DEBUG_PRINT("\t");
-  DEBUG_PRINT("Pozice:");DEBUG_PRINT(z);DEBUG_PRINT("\t");
+ //DEBUG_PRINT("čára:");DEBUG_PRINT(cara_detekovana);DEBUG_PRINT("\t");
  // DEBUG_PRINTLN("");
   int32_t x = (sensor[0]>500 && sensor[4]>500) ? -100 : (cara_detekovana) ? soucet_hodnot/pocet_sens : z;
+  //DEBUG_PRINT("Pozice:");DEBUG_PRINT(x);DEBUG_PRINT("\t");
   return x;
 }
 
@@ -209,7 +210,7 @@ void jedeme_s_PID() {
   if (pozice == -100){zastav(1000);DEBUG_PRINTLN("Cílová čára");}//STOP
   else {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
-  DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
+  //DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
    Kp = nacti_trimr(1)/10230.0000;
    MAX_SPEED_L = constrain(nacti_trimr(2)/4,0,255);
    MAX_SPEED_R = MAX_SPEED_L;
@@ -384,7 +385,7 @@ void kalibrace() {
   delay(500);
   #endif
   DEBUG_PRINTLN(" ");
-  DEBUG_PRINTLN("Kalibrace - projdi senzory...");
+  DEBUG_PRINTLN("Kalibrace - sken senzorů...");
   stbyoff(true);
   uint32_t time0 = millis();
   uint32_t time1 = time0;
@@ -472,5 +473,5 @@ boolean kontrola_kalibrace(){
 *************************************************************************/
 void pulse_led(uint16_t t, uint8_t led){
     uint32_t time0 = millis();
-    while((millis()-time0)<=t){digitalWrite(led, HIGH);delay(15);digitalWrite(led, LOW);delay(300);}
+    while((millis()-time0)<=t){digitalWrite(led, HIGH);delay(20);digitalWrite(led, LOW);delay(300);}
 }
