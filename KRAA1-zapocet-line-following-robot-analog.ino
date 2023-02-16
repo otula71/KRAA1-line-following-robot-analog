@@ -12,8 +12,6 @@
 *  none
 *************************************************************************/
 void setup() {
-  pinMode(HC_TRIG, OUTPUT);
-  pinMode(HC_ECHO, INPUT);
   pinMode(TRIMR1, INPUT);
   pinMode(TRIMR2, INPUT);
   pinMode(ONOFF, INPUT);
@@ -31,6 +29,9 @@ void setup() {
   //servo_oci.attach(SERVO);
   #ifdef DEBUG
       Serial.begin(9600);
+    #else
+      pinMode(HC_TRIG, OUTPUT);
+      pinMode(HC_ECHO, INPUT);
   #endif
 
   while (!kontrola_kalibrace()){kalibrace();}
@@ -76,6 +77,7 @@ void loop() {
     //delay(10);
     digitalWrite(LED_BLUE, HIGH);};
     jedeme_s_PID(); //jedeme
+    //jedeme_stupid();
   }
   else {
     zastav(500); //stojíme
@@ -151,7 +153,6 @@ void zastav(uint16_t t) {
   }
 
 
-
 /*************************************************************************
 * Název funkce: detekuj_caru
 **************************************************************************
@@ -171,7 +172,7 @@ void zastav(uint16_t t) {
 int32_t detekuj_caru(int32_t z) {
   cara_detekovana = false;
   uint32_t soucet_hodnot = 0;
-  uint16_t pocet_sens = 0;
+  uint8_t pocet_sens = 0;
   for(uint8_t i=0; i<NUM_SENSORS; i++){
   sensor[i] = analogRead(SENSOR[i]);
   sensor[i]=constrain(map(sensor[i], minS[i], maxS[i],0,1000),0,1000);
@@ -210,10 +211,10 @@ void jedeme_s_PID() {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
   DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
    Kp = nacti_trimr(1)/10230.0000;
-   MAX_SPEED_L = nacti_trimr(2)/4;
+   MAX_SPEED_L = constrain(nacti_trimr(2)/4,0,255);
    MAX_SPEED_R = MAX_SPEED_L;
   P = error;
-  I = I + error;
+  I += error;
   D = error - lastError;
   lastError = error;
   int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID s měřením 
@@ -223,8 +224,8 @@ void jedeme_s_PID() {
   MED_SPEED_R = MAX_SPEED_R - abs(korekce_rychlosti);
 /*******************************/
 
-  uint8_t rychlost_L = constrain(MED_SPEED_L + korekce_rychlosti,0,MAX_SPEED_L);
-  uint8_t rychlost_R = constrain(MED_SPEED_R - korekce_rychlosti,0,MAX_SPEED_R);
+  uint8_t rychlost_L = constrain(MED_SPEED_L + korekce_rychlosti,MIN_SPEED,MAX_SPEED_L);
+  uint8_t rychlost_R = constrain(MED_SPEED_R - korekce_rychlosti,MIN_SPEED,MAX_SPEED_R);
    
   ovladani_motoru(rychlost_L, rychlost_R, 'f');
 
@@ -248,11 +249,11 @@ void jedeme_s_PID() {
 *************************************************************************/
 void jedeme_stupid() {
   pozice = detekuj_caru(pozice); //načti aktuální pozici
-   MED_SPEED_L = nacti_trimr(2)/4;
+   MED_SPEED_L = constrain(nacti_trimr(2)/4,0,255);
    MED_SPEED_R = MED_SPEED_L;
   if (pozice == -100){zastav(1000);DEBUG_PRINTLN("Cílová čára");}//STOP
-  else if (pozice>2000){ovladani_motoru(MED_SPEED_L, 0, 'f');}
-  else if (pozice<2000){ovladani_motoru(0, MED_SPEED_R, 'f');}
+  else if (pozice>2000){ovladani_motoru(MED_SPEED_L, MIN_SPEED, 'f');}
+  else if (pozice<2000){ovladani_motoru(MIN_SPEED, MED_SPEED_R, 'f');}
   else {ovladani_motoru(MED_SPEED_L, MED_SPEED_R, 'f');}
 }
 
@@ -297,13 +298,17 @@ void zatoc(char smer, uint8_t spd, uint16_t cas) { //Turning setup
 * Vrací:
 *  uint: vzdálenost předmětu (reálně čas odezvy)
 *************************************************************************/
-uint16_t prekazka() { 
+uint16_t prekazka() {
+  #ifndef DEBUG 
   digitalWrite(HC_TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(HC_TRIG, HIGH);
   delayMicroseconds(5);
   digitalWrite(HC_TRIG, LOW);
   uint16_t odezva = pulseIn(HC_ECHO, HIGH);
+  #else
+  uint16_t odezva = 10000;
+  #endif
   return odezva;
 }
 
@@ -467,5 +472,5 @@ boolean kontrola_kalibrace(){
 *************************************************************************/
 void pulse_led(uint16_t t, uint8_t led){
     uint32_t time0 = millis();
-    while((millis()-time0)<=t){digitalWrite(led, HIGH);delay(5);digitalWrite(led, LOW);delay(300);}
+    while((millis()-time0)<=t){digitalWrite(led, HIGH);delay(15);digitalWrite(led, LOW);delay(300);}
 }
