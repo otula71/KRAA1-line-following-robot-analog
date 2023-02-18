@@ -52,9 +52,9 @@ void setup() {
 *  none
 *************************************************************************/
 void loop() {
-  if(digitalRead(ONOFF) == HIGH) {
+  if(digitalRead(ONOFF)) {
     onoff =! onoff; //při stisku tlačítka přepneme stav
-    if(onoff == true) {
+    if(onoff) {
       DEBUG_PRINTLN("Jedeme!");
       stbyoff(true);
       pulse_led(1700, LED_BLUE); //chvilka strpení před startem
@@ -68,7 +68,7 @@ void loop() {
     }
   }
   
-  if (onoff == true) {
+  if (onoff) {
     if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
     //delay(10);
     //digitalWrite(LED_BLUE, LOW);
