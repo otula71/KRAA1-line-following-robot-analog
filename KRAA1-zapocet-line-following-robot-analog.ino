@@ -219,9 +219,11 @@ void jedeme_s_PID() {
   else {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
   //DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
+   #ifndef DISABLETRIMR
    Kp = nacti_trimr(1)/10230.0000;
    MAX_SPEED_L = constrain(nacti_trimr(2)/4,0,255);
    MAX_SPEED_R = MAX_SPEED_L;
+   #endif
   P = error;
   I += error;
   D = error - lastError;
