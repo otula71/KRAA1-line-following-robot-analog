@@ -1,7 +1,8 @@
 #ifndef SETUP_H
 #define SETUP_H
 
-//#define DEBUG       // zakomentuj před finální kompilací, 
+//#define DEBUG       // zakomentuj před finální kompilací
+//#define KACENA      // kačení styl jízdy
 
 /*************************************************************************
 * připojení k Arduinu
