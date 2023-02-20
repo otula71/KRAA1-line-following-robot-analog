@@ -18,7 +18,6 @@ Součástky:
 <ul>
 <li><a href="https://www.aliexpress.com/item/1005002524993718.html">motor s úchytem a kolem</a></li>
 <li><a href="https://www.aliexpress.com/item/32465698640.html">H-můstek TB6612FNG</a></li>
-<li><a href="https://www.aliexpress.com/item/32465698640.html">H-můstek TB6612FNG</a></li>
 <li>čidla s TCRT5000 &ndash; najděte si taková, co mají analogový výstup nebo jsou rovno na jedné liště</li>
 <li>Arduino Nano, UZ modul HC SR-04, tlačítko, 2 spínače&hellip;</li>
 <li>Držák na 2 lithiovky a ty baterky k tomu. Já používám 18650, ale pokud máte 14500, ušetříte na hmotnosti a vejdou se vám do držáku na AA.</li>
