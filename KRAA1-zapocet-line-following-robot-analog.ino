@@ -30,8 +30,10 @@ void setup() {
   #ifdef DEBUG
       Serial.begin(9600);
     #else
+      #ifndef BEZULTRAZVUKU
       pinMode(HC_TRIG, OUTPUT);
       pinMode(HC_ECHO, INPUT);
+      #endif
   #endif
 
   while (!kontrola_kalibrace()){kalibrace();}
@@ -43,7 +45,7 @@ void setup() {
 * Název funkce: loop
 **************************************************************************
 * Řídicí program.
-* Kontroluje spuštění/vypnutí a volá další funkce
+* Kontroluje tlačítko a volá funkce pro překážku a jízdu
 * 
 * Parametry:
 *  none 
@@ -69,6 +71,7 @@ void loop() {
   }
   
   if (onoff) {
+    #ifndef BEZULTRAZVUKU
     if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
     //delay(10);
     //digitalWrite(LED_BLUE, LOW);
@@ -77,8 +80,12 @@ void loop() {
     //delay(10);
     //digitalWrite(LED_BLUE, HIGH);
     };
+    #endif
+    #ifndef KACENA
     jedeme_s_PID(); //jedeme
-    //jedeme_stupid();
+    #else
+    jedeme_stupid();
+    #endif
   }
   else {
     zastav(500); //stojíme
@@ -204,6 +211,7 @@ int32_t detekuj_caru(int32_t z) {
 * Vrací:
 *  none
 *************************************************************************/
+#ifndef KACENA
 void jedeme_s_PID() {
   pozice = detekuj_caru(pozice); //načti aktuální pozici
 //  DEBUG_PRINT("pos2: ");DEBUG_PRINT(pozice);DEBUG_PRINT("\t");
@@ -234,7 +242,7 @@ void jedeme_s_PID() {
   //DEBUG_PRINT("Trimr/100: ");DEBUG_PRINTLN(koef*100);
   }
 }
-
+#endif
 
 /*************************************************************************
 * Název funkce: jedeme_stupid
@@ -248,6 +256,7 @@ void jedeme_s_PID() {
 * Vrací:
 *  none
 *************************************************************************/
+#ifdef KACENA
 void jedeme_stupid() {
   pozice = detekuj_caru(pozice); //načti aktuální pozici
    MED_SPEED_L = constrain(nacti_trimr(2)/4,0,255);
@@ -257,7 +266,7 @@ void jedeme_stupid() {
   else if (pozice<2000){ovladani_motoru(MIN_SPEED, MED_SPEED_R, 'f');}
   else {ovladani_motoru(MED_SPEED_L, MED_SPEED_R, 'f');}
 }
-
+#endif
 
 /*************************************************************************
 * Název funkce: zatoc
@@ -299,6 +308,7 @@ void zatoc(char smer, uint8_t spd, uint16_t cas) { //Turning setup
 * Vrací:
 *  uint: vzdálenost předmětu (reálně čas odezvy)
 *************************************************************************/
+#ifndef BEZULTRAZVUKU
 uint16_t prekazka() {
   #ifndef DEBUG 
   digitalWrite(HC_TRIG, LOW);
@@ -312,6 +322,7 @@ uint16_t prekazka() {
   #endif
   return odezva;
 }
+#endif
 
 /*************************************************************************
 * Název funkce: nacti_trimr(1|2)
