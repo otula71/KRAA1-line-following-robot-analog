@@ -27,10 +27,10 @@ const uint8_t STBY = 13;
 const uint8_t NUM_SENSORS = 5;
 const uint8_t SENSOR[NUM_SENSORS] = {14, 15, 16, 17, 18};   // IR snímače A0-A4
 const uint16_t STRED_SENZORU = (NUM_SENSORS - 1) * 500;
-
+#ifndef DISABLETRIMR
 #define TRIMR1 A5
 #define TRIMR2 A6
-
+#endif
 
 /*************************************************************************
 * nastavení hodnot pro rychlost
