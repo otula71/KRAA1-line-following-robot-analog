@@ -3,6 +3,7 @@
 
 //#define DEBUG       // zakomentuj před finální kompilací
 //#define KACENA      // kačení styl jízdy
+//#define BEZULTRAZVUKU // kašle na chodce
 
 /*************************************************************************
 * připojení k Arduinu
