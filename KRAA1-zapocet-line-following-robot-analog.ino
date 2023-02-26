@@ -502,9 +502,9 @@ void pulse_led(uint16_t t, uint8_t led){
 *  none
 *************************************************************************/
 #ifndef BEZULTRAZVUKU
-void objed_prekazku(unit16_t x) {
+void objed_prekazku(uint16_t x) {
   zatoc('R', 100, 200);
-  if (prekazka()>(PREKAZKA+500) {
+  if (prekazka()>(PREKAZKA+500)) {
     ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
     delay(x);
     zatoc('L', 100, 200);
