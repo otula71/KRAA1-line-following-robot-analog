@@ -73,6 +73,7 @@ void loop() {
   if (onoff) {
     #ifndef BEZULTRAZVUKU
     if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
+    objed_prekazku();
     //delay(10);
     //digitalWrite(LED_BLUE, LOW);
     }
@@ -488,3 +489,30 @@ void pulse_led(uint16_t t, uint8_t led){
     uint32_t time0 = millis();
     while((millis()-time0)<=t){digitalWrite(led, HIGH);delay(20);digitalWrite(led, LOW);delay(300);}
 }
+
+/*************************************************************************
+* Název funkce: objed_prekazku
+**************************************************************************
+* Snaží se objet překážku  
+* 
+* Parametry:
+*  
+* 
+* Vrací:
+*  
+*************************************************************************/
+#ifndef BEZULTRAZVUKU
+void objed_prekazku() {
+  zatoc('R', 100, 200);
+  if (prekazka()>(PREKAZKA+500) {
+    ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
+    delay(1000);
+    zatoc('L', 100, 200);
+    if (prekazka()>PREKAZKA){
+      while (detekuj_caru(-100)==-100) {
+        ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
+      }
+    }
+  }
+}
+#endif
