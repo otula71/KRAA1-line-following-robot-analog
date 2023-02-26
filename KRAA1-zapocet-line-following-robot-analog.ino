@@ -491,22 +491,22 @@ void pulse_led(uint16_t t, uint8_t led){
 }
 
 /*************************************************************************
-* Název funkce: objed_prekazku
+* Název funkce: objed_prekazku(uint čas)
 **************************************************************************
 * Snaží se objet překážku  
 * 
 * Parametry:
-*  
+*  uint čas v ms, po kterou pojede směrem doprava
 * 
 * Vrací:
-*  
+*  none
 *************************************************************************/
 #ifndef BEZULTRAZVUKU
-void objed_prekazku() {
+void objed_prekazku(unit16_t x) {
   zatoc('R', 100, 200);
   if (prekazka()>(PREKAZKA+500) {
     ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
-    delay(1000);
+    delay(x);
     zatoc('L', 100, 200);
     if (prekazka()>PREKAZKA){
       while (detekuj_caru(-100)==-100) {
