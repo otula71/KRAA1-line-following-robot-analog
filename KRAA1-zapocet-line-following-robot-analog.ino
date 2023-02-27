@@ -2,8 +2,7 @@
 /*************************************************************************
 * Název funkce: setup
 **************************************************************************
-* Nastavení vstupů/výstupů
-* případná další nastavení
+* Nastavení potřebného a kalibrace analogových senzorů
 * 
 * Parametry:
 *  none 
@@ -101,7 +100,10 @@ void loop() {
 * Parametry:
 *  int l: od 0 do 255; rychlost levého motoru
 *  int r: od 0 do 255; rychlost pravého motoru
-*  char f; f: dopředu, r: dozadu, b: zastavit, s: prudce zastavit
+*  char f: f(orward): dopředu, 
+*          r(everse): dozadu, 
+*          b(rake): brzdy, 
+*          s(top): zastavit
 * 
 * Vrací:
 *  none
@@ -126,7 +128,7 @@ void ovladani_motoru(uint8_t l, uint8_t r, char f) {
     digitalWrite(R_MOTOR2, HIGH);
     break;
 
-    case 's':
+    case 'b':
     digitalWrite(ENA, LOW);
     digitalWrite(ENB, LOW);
     digitalWrite(L_MOTOR1, HIGH);
@@ -135,7 +137,7 @@ void ovladani_motoru(uint8_t l, uint8_t r, char f) {
     digitalWrite(R_MOTOR2, HIGH);
     break;
 
-    case 'b':
+    case 's':
     digitalWrite(ENA, HIGH);
     digitalWrite(ENB, HIGH);
     digitalWrite(L_MOTOR1, LOW);
@@ -157,7 +159,7 @@ void ovladani_motoru(uint8_t l, uint8_t r, char f) {
 *  none
 *************************************************************************/
 void zastav(uint16_t t) {
-    ovladani_motoru(0,0,'b');
+    ovladani_motoru(0,0,'s');
     delay(t);
   }
 
@@ -444,7 +446,7 @@ void stbyoff(boolean x){
 }
   
 /*************************************************************************
-* Název funkce: kontrola_kalibrace()
+* Název funkce: kontrola_kalibrace
 **************************************************************************
 * kontroluje, zda kalibrace dala rozumné výsledky
 * Pokud nedala, volá ji znovu
