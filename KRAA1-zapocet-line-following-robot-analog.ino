@@ -72,13 +72,9 @@ void loop() {
   if (onoff) {
     #ifndef BEZULTRAZVUKU
     if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
-    objed_prekazku();
-    //delay(10);
-    //digitalWrite(LED_BLUE, LOW);
+        objed_prekazku();
     }
     else {digitalWrite(LED_RED, LOW);
-    //delay(10);
-    //digitalWrite(LED_BLUE, HIGH);
     };
     #endif
     #ifndef KACENA
