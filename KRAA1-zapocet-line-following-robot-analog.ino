@@ -509,6 +509,9 @@ void objed_prekazku(uint16_t x) {
     delay(x);
     zatoc('L', 100, 200);
     if (prekazka()>PREKAZKA){
+      ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
+      delay(x/2);
+      zatoc('L', 100, 200);
       while (detekuj_caru(-100)==-100) {
         ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
       }
