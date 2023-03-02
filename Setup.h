@@ -3,16 +3,16 @@
 
 //#define DEBUG       // zakomentuj před finální kompilací
 //#define KACENA      // kačení styl jízdy
-//#define BEZULTRAZVUKU // kašle na chodce
-//#define DISABLETRIMR //nebude načítat hodnoty z trimrů
+#define BEZULTRAZVUKU // kašle na chodce
+#define DISABLETRIMR //nebude načítat hodnoty z trimrů
 
 /*************************************************************************
 * připojení k Arduinu
 *************************************************************************/
-#ifndef DEBUG
+//#ifndef DEBUG
 const uint8_t HC_TRIG = 0;
 const uint8_t HC_ECHO = 2;
-#endif
+//#endif
 //const uint8_t SERVO = 3;
 const uint8_t ONOFF = 4;
 const uint8_t ENA = 5;   //motory
@@ -35,8 +35,8 @@ const uint16_t STRED_SENZORU = (NUM_SENSORS - 1) * 500;
 /*************************************************************************
 * nastavení hodnot pro rychlost
 *************************************************************************/
-uint8_t MAX_SPEED_L = 255;
-uint8_t MAX_SPEED_R = 255;
+const uint8_t MAX_SPEED_L = 255;
+const uint8_t MAX_SPEED_R = 255;
 uint8_t MED_SPEED_L = 90;
 uint8_t MED_SPEED_R = 90;
 const uint8_t MIN_SPEED = 0;
@@ -44,10 +44,10 @@ const uint8_t MIN_SPEED = 0;
 /*************************************************************************
 * ladění PID
 *************************************************************************/
-float Kp = 0.100; //hodnota Proportional pro PID (např. 0.07)
+const float Kp = 0.06; //hodnota Proportional pro PID (např. 0.07)
                         // 2k*0.1275=255, 2k*0.07=140
-float Ki = 0; //hodnota Integral pro PID (např. 0.0008)
-float Kd = 0.0; //hodnota Derivative pro PID (např. 10-20 * Kp)
+float Ki = 0.0008; //hodnota Integral pro PID (např. 0.0008)
+float Kd = 1.6; //hodnota Derivative pro PID (např. 10-20 * Kp)
 
 /*************************************************************************
 * proměnné pro PID
@@ -67,8 +67,8 @@ int16_t error = 0;
 uint16_t sensor[NUM_SENSORS] = {0, 0, 0, 0, 0};
 uint16_t minS[NUM_SENSORS];
 uint16_t maxS[NUM_SENSORS];
-uint8_t kalibracni_rychlost = 80;
-const uint16_t PREKAZKA = 1000; //vzdálenost, od které je vyhodnocen 
+uint8_t kalibracni_rychlost = 200;
+const uint16_t PREKAZKA = 500; //vzdálenost, od které je vyhodnocen 
                                 //předmět jako překážka
 
 /*************************************************************************

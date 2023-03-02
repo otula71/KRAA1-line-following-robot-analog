@@ -11,8 +11,10 @@
 *  none
 *************************************************************************/
 void setup() {
+#ifndef DISABLETRIMR
   pinMode(TRIMR1, INPUT);
   pinMode(TRIMR2, INPUT);
+#endif
   pinMode(ONOFF, INPUT);
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
@@ -28,12 +30,12 @@ void setup() {
   //servo_oci.attach(SERVO);
   #ifdef DEBUG
       Serial.begin(9600);
-    #else
+  #endif
+//    #else
       #ifndef BEZULTRAZVUKU
       pinMode(HC_TRIG, OUTPUT);
       pinMode(HC_ECHO, INPUT);
       #endif
-  #endif
 
   while (!kontrola_kalibrace()){kalibrace();}
   
@@ -58,6 +60,7 @@ void loop() {
     if(onoff) {
       DEBUG_PRINTLN("Jedeme!");
       stbyoff(true);
+  //    DEBUG_PRINT("Standby: ");DEBUG_PRINTLN(digitalRead(STBY));
       pulse_led(1700, LED_BLUE); //chvilka strpení před startem
     }
     else {
@@ -71,15 +74,19 @@ void loop() {
   
   if (onoff) {
     #ifndef BEZULTRAZVUKU
+    DEBUG_PRINT("Překážka: ");DEBUG_PRINTLN(prekazka());
     if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
-        objed_prekazku();
+       // objed_prekazku(500);
+       zastav(1000);
     }
     else {digitalWrite(LED_RED, LOW);
     };
     #endif
     #ifndef KACENA
+//    DEBUG_PRINT("Standby: ");DEBUG_PRINTLN(digitalRead(STBY));
     jedeme_s_PID(); //jedeme
     #else
+//    DEBUG_PRINT("Standby: ");DEBUG_PRINTLN(digitalRead(STBY));
     jedeme_stupid();
     #endif
   }
@@ -219,15 +226,16 @@ void jedeme_s_PID() {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
   //DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
    #ifndef DISABLETRIMR
-   Kp = nacti_trimr(1)/10230.0000;
-   MAX_SPEED_L = constrain(nacti_trimr(2)/4,0,255);
-   MAX_SPEED_R = MAX_SPEED_L;
+   Kd = nacti_trimr(1)/400.0000;
+   Ki = nacti_trimr(2)/102300.0000;
    #endif
   P = error;
   I += error;
   D = error - lastError;
   lastError = error;
   int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID s měřením 
+  DEBUG_PRINT("Kd: ");DEBUG_PRINT(Kd);DEBUG_PRINT("\t");  DEBUG_PRINT("Ki*1000: ");DEBUG_PRINTLN(Ki*1000);
+
 
 /* MAXIMÁLNÍ RYCHLOST **********/
   MED_SPEED_L = MAX_SPEED_L - abs(korekce_rychlosti);
@@ -263,8 +271,8 @@ void jedeme_stupid() {
    MED_SPEED_L = constrain(nacti_trimr(2)/4,0,255);
    MED_SPEED_R = MED_SPEED_L;
   if (pozice == -100){zastav(1000);DEBUG_PRINTLN("Cílová čára");}//STOP
-  else if (pozice>2000){ovladani_motoru(MED_SPEED_L, MIN_SPEED, 'f');}
-  else if (pozice<2000){ovladani_motoru(MIN_SPEED, MED_SPEED_R, 'f');}
+  else if (pozice<2000){ovladani_motoru(MED_SPEED_L, MIN_SPEED, 'f');}
+  else if (pozice>2000){ovladani_motoru(MIN_SPEED, MED_SPEED_R, 'f');}
   else {ovladani_motoru(MED_SPEED_L, MED_SPEED_R, 'f');}
 }
 #endif
@@ -311,16 +319,16 @@ void zatoc(char smer, uint8_t spd, uint16_t cas) { //Turning setup
 *************************************************************************/
 #ifndef BEZULTRAZVUKU
 uint16_t prekazka() {
-  #ifndef DEBUG 
+//  #ifndef DEBUG 
   digitalWrite(HC_TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(HC_TRIG, HIGH);
-  delayMicroseconds(5);
+  delayMicroseconds(2);
   digitalWrite(HC_TRIG, LOW);
   uint16_t odezva = pulseIn(HC_ECHO, HIGH);
-  #else
-  uint16_t odezva = 10000;
-  #endif
+//  #else
+//  uint16_t odezva = 10000;
+//  #endif
   return odezva;
 }
 #endif
@@ -338,6 +346,7 @@ uint16_t prekazka() {
 * Vrací:
 *  uint16_t: 0-1023
 *************************************************************************/
+#ifndef DISABLETRIMR
 uint16_t nacti_trimr(uint8_t x) { 
   switch (x) {
     case 1:
@@ -348,7 +357,7 @@ uint16_t nacti_trimr(uint8_t x) {
       break;
   }
 }
-
+#endif
 /*************************************************************************
 * Název funkce: rozhledni_se
 **************************************************************************
@@ -427,7 +436,7 @@ void kalibrace() {
 /*************************************************************************
 * Název funkce: stbyoff(BOOL)
 **************************************************************************
-* vypíná a zapíná stanby motorů
+* vypíná a zapíná standby motorů
 * 
 * Parametry:
 *  TRUE|FALSE - při TRUE motory běží
@@ -437,7 +446,7 @@ void kalibrace() {
 *************************************************************************/
 
 void stbyoff(boolean x){
-  if (!x) {digitalWrite(STBY,HIGH);}
+  if (x) {digitalWrite(STBY,HIGH);}
   else {digitalWrite(STBY,LOW);}
 }
   
