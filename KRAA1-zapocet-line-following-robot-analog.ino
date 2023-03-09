@@ -60,7 +60,6 @@ void loop() {
     if(onoff) {
       DEBUG_PRINTLN("Jedeme!");
       stbyoff(true);
-  //    DEBUG_PRINT("Standby: ");DEBUG_PRINTLN(digitalRead(STBY));
       pulse_led(1700, LED_BLUE); //chvilka strpení před startem
     }
     else {
@@ -74,20 +73,17 @@ void loop() {
   
   if (onoff) {
     #ifndef BEZULTRAZVUKU
-    DEBUG_PRINT("Překážka: ");DEBUG_PRINTLN(prekazka());
-    if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
-       // objed_prekazku(500);
-       zastav(1000);
-    }
-    else {digitalWrite(LED_RED, LOW);
-    };
+      prekazka();
+      if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
+        // objed_prekazku(500);
+        zastav(1000);
+      }
+      else {digitalWrite(LED_RED, LOW);};
     #endif
     #ifndef KACENA
-//    DEBUG_PRINT("Standby: ");DEBUG_PRINTLN(digitalRead(STBY));
-    jedeme_s_PID(); //jedeme
+      jedeme_s_PID(); //jedeme
     #else
-//    DEBUG_PRINT("Standby: ");DEBUG_PRINTLN(digitalRead(STBY));
-    jedeme_stupid();
+      jedeme_stupid();
     #endif
   }
   else {
@@ -98,12 +94,13 @@ void loop() {
 /*************************************************************************
 * Název funkce: ovladani_motoru
 **************************************************************************
-* Tato funkce ovládá chod motorků
+* Tato (přetížená) funkce ovládá chod motorků
 * 
 * Parametry:
 *  int l: od 0 do 255; rychlost levého motoru
 *  int r: od 0 do 255; rychlost pravého motoru
-*  char f: f(orward): dopředu, 
+*  char f: možno vynechat, potom jede dopředu ***
+*          f(orward): dopředu, 
 *          r(everse): dozadu, 
 *          b(rake): brzdy, 
 *          s(top): zastavit
@@ -111,6 +108,15 @@ void loop() {
 * Vrací:
 *  none
 *************************************************************************/
+void ovladani_motoru(uint8_t l, uint8_t r) { 
+    analogWrite(ENA, l);
+    analogWrite(ENB, r);
+    digitalWrite(L_MOTOR1, HIGH);
+    digitalWrite(L_MOTOR2, LOW);
+    digitalWrite(R_MOTOR1, HIGH);
+    digitalWrite(R_MOTOR2, LOW);
+}
+
 void ovladani_motoru(uint8_t l, uint8_t r, char f) { 
   switch (f)  {
     case 'f':
@@ -190,17 +196,17 @@ int32_t detekuj_caru(int32_t z) {
   for(uint8_t i=0; i<NUM_SENSORS; i++){
   sensor[i] = analogRead(SENSOR[i]);
   sensor[i]=constrain(map(sensor[i], minS[i], maxS[i],0,1000),0,1000);
-  //DEBUG_PRINT(sensor[i]);DEBUG_PRINT("\t");
-  if(sensor[i]>500)cara_detekovana = true; //čáru vyhodnocuji od hodnoty 200, potřeba poladit
+  DEBUG_PRINT(sensor[i]);DEBUG_PRINT("\t");
+  if(sensor[i]>500)cara_detekovana = true; //čáru vyhodnocuji od hodnoty 500, potřeba poladit
     if(sensor[i]>50) { //připočítávám senzory, které zachytí jakous-takous hodnotu, také potřeba poladit
     soucet_hodnot += (uint32_t)sensor[i]*1000*i;
     pocet_sens += sensor[i]; //nedává to přesný výsledek, ale mohlo by to obstát
     }
   }
- //DEBUG_PRINT("čára:");DEBUG_PRINT(cara_detekovana);DEBUG_PRINT("\t");
- // DEBUG_PRINTLN("");
+ DEBUG_PRINT("čára:");DEBUG_PRINT(cara_detekovana);DEBUG_PRINT("\t");
+ DEBUG_PRINTLN("");
   int32_t x = (sensor[0]>500 && sensor[4]>500) ? -100 : (cara_detekovana) ? soucet_hodnot/pocet_sens : z;
-  //DEBUG_PRINT("Pozice:");DEBUG_PRINT(x);DEBUG_PRINT("\t");
+ DEBUG_PRINT("Pozice:");DEBUG_PRINT(x);DEBUG_PRINT("\t");
   return x;
 }
 
@@ -226,16 +232,20 @@ void jedeme_s_PID() {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
   //DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
    #ifndef DISABLETRIMR
-   Kd = nacti_trimr(1)/400.0000;
-   Ki = nacti_trimr(2)/102300.0000;
+   Kp = (nacti_trimr(1))/5000.000000;
+   DEBUG_PRINT("Kp: ");DEBUG_PRINT(Kp);DEBUG_PRINT("\t");
+   Ki = (nacti_trimr(2))/5000.00000;
+   DEBUG_PRINTLN(Kd);
    #endif
   P = error;
-  I += error;
-  D = error - lastError;
-  lastError = error;
+  casAktualni = millis();
+  casVzorkovaci = (float)(casAktualni - casMinuly)/1000;
+  I += error*casVzorkovaci;
+  D = (error - lastError)/casVzorkovaci;
   int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID s měřením 
-  DEBUG_PRINT("Kd: ");DEBUG_PRINT(Kd);DEBUG_PRINT("\t");  DEBUG_PRINT("Ki*1000: ");DEBUG_PRINTLN(Ki*1000);
-
+  //DEBUG_PRINT("Kd: ");DEBUG_PRINT(Kd);DEBUG_PRINT("\t");  DEBUG_PRINT("Ki*1000: ");DEBUG_PRINTLN(Ki*1000);
+  lastError = error;
+  casMinuly = casAktualni;
 
 /* MAXIMÁLNÍ RYCHLOST **********/
   MED_SPEED_L = MAX_SPEED_L - abs(korekce_rychlosti);
@@ -245,18 +255,23 @@ void jedeme_s_PID() {
   uint8_t rychlost_L = constrain(MED_SPEED_L + korekce_rychlosti,MIN_SPEED,MAX_SPEED_L);
   uint8_t rychlost_R = constrain(MED_SPEED_R - korekce_rychlosti,MIN_SPEED,MAX_SPEED_R);
    
-  ovladani_motoru(rychlost_L, rychlost_R, 'f');
+  ovladani_motoru(rychlost_L, rychlost_R);
 
   //DEBUG_PRINT("Pozice: ");DEBUG_PRINTLN(error);
   //DEBUG_PRINT("Trimr/100: ");DEBUG_PRINTLN(koef*100);
   }
 }
+
+
+
+
 #endif
+
 
 /*************************************************************************
 * Název funkce: jedeme_stupid
 **************************************************************************
-* Funkce pro ovládání robota pomocí algoritmu kačena.
+* Funkce pro ovládání robota pomocí primitivního algoritmu kačena.
 * Záchranná funkce, kdyby to nešlo doladit :-)))))
 * 
 * Parametry:
@@ -268,12 +283,14 @@ void jedeme_s_PID() {
 #ifdef KACENA
 void jedeme_stupid() {
   pozice = detekuj_caru(pozice); //načti aktuální pozici
+  #ifndef DISABLETRIMR
    MED_SPEED_L = constrain(nacti_trimr(2)/4,0,255);
    MED_SPEED_R = MED_SPEED_L;
+  #endif
   if (pozice == -100){zastav(1000);DEBUG_PRINTLN("Cílová čára");}//STOP
-  else if (pozice<2000){ovladani_motoru(MED_SPEED_L, MIN_SPEED, 'f');}
-  else if (pozice>2000){ovladani_motoru(MIN_SPEED, MED_SPEED_R, 'f');}
-  else {ovladani_motoru(MED_SPEED_L, MED_SPEED_R, 'f');}
+  else if (pozice<2000){ovladani_motoru(MED_SPEED_L, MIN_SPEED);}
+  else if (pozice>2000){ovladani_motoru(MIN_SPEED, MED_SPEED_R);}
+  else {ovladani_motoru(MED_SPEED_L, MED_SPEED_R);}
 }
 #endif
 
@@ -291,14 +308,14 @@ void jedeme_stupid() {
 * Vrací:
 *  none
 *************************************************************************/
-void zatoc(char smer, uint8_t spd, uint16_t cas) { //Turning setup
+void zatoc(char smer, uint8_t spd, uint16_t cas) {
   switch(smer) {
     case 'L':
-      ovladani_motoru(constrain(MED_SPEED_L-spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R+spd,MIN_SPEED, MAX_SPEED_R), 'f');
+      ovladani_motoru(constrain(MED_SPEED_L-spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R+spd,MIN_SPEED, MAX_SPEED_R));
       delay(cas);
       break;
     case 'R':
-      ovladani_motoru(constrain(MED_SPEED_L+spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R-spd,MIN_SPEED, MAX_SPEED_R), 'f');
+      ovladani_motoru(constrain(MED_SPEED_L+spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R-spd,MIN_SPEED, MAX_SPEED_R));
       delay(cas);
       break;
   }
@@ -323,9 +340,11 @@ uint16_t prekazka() {
   digitalWrite(HC_TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(HC_TRIG, HIGH);
-  delayMicroseconds(2);
+  delayMicroseconds(5);
   digitalWrite(HC_TRIG, LOW);
-  uint16_t odezva = pulseIn(HC_ECHO, HIGH);
+  uint16_t odezva = pulseIn(HC_ECHO, HIGH, 5000);
+  odezva = (odezva == 0) ? 10000 : odezva;
+  DEBUG_PRINT("Překážka: ");DEBUG_PRINTLN(odezva);
 //  #else
 //  uint16_t odezva = 10000;
 //  #endif
@@ -338,7 +357,7 @@ uint16_t prekazka() {
 **************************************************************************
 * Funkce pro ladění pohybu
 * čte hodnotu z připojeného trimru
-* načítá se pouze při ladění
+* Po nalezení hodnot je zadat do setupu a funkci v setupu vypnout
 * 
 * Parametry:
 *  vyber trimr 1 nebo 2
@@ -403,30 +422,29 @@ uint16_t rozhledni_se(char S) {
 *************************************************************************/
 void kalibrace() {
   #ifdef DEBUG
-  delay(500);
+    delay(500);
   #endif
   DEBUG_PRINTLN(" ");
   DEBUG_PRINTLN("Kalibrace - sken senzorů...");
   stbyoff(true);
   uint32_t time0 = millis();
   uint32_t time1 = time0;
-//  uint32_t timeL;
   for(uint8_t i=0; i<NUM_SENSORS; i++){
     sensor[i]=analogRead(SENSOR[i]);
     minS[i]=sensor[i];
     maxS[i]=sensor[i];
     }
-  while((millis()-time0)<=10000){
+  while((millis()-time0)<=5000){
     for(byte i=0; i<NUM_SENSORS; i++){
       sensor[i]=analogRead(SENSOR[i]);
       if(sensor[i]<minS[i]) minS[i]=sensor[i];
       if(sensor[i]>maxS[i]) maxS[i]=sensor[i];
     }
-    ovladani_motoru(0, kalibracni_rychlost, 'f');
+    ovladani_motoru(0, kalibracni_rychlost);
     }
     #ifdef DEBUG
-    DEBUG_PRINTLN("Kalibrace dokončena: ");
-    for (uint8_t i=0; i<NUM_SENSORS;i++){DEBUG_PRINT("senzor "); DEBUG_PRINT(i); DEBUG_PRINT(" min: "); DEBUG_PRINT(minS[i]); DEBUG_PRINT(" -- max: "); DEBUG_PRINTLN(maxS[i]);}
+      DEBUG_PRINTLN("Kalibrace dokončena: ");
+      for (uint8_t i=0; i<NUM_SENSORS;i++){DEBUG_PRINT("senzor "); DEBUG_PRINT(i); DEBUG_PRINT(" min: "); DEBUG_PRINT(minS[i]); DEBUG_PRINT(" -- max: "); DEBUG_PRINTLN(maxS[i]);}
     #endif
     zastav(100);
 }
@@ -474,8 +492,8 @@ boolean kontrola_kalibrace(){
   }
   else {
     DEBUG_PRINTLN("Chybná kalibrace");
-    pulse_led(4000,LED_RED);
-    digitalWrite(LED_RED,HIGH); delay(2000);digitalWrite(LED_RED,LOW);
+    pulse_led(3000,LED_RED);
+    digitalWrite(LED_RED,HIGH); delay(1000);digitalWrite(LED_RED,LOW);
     }
     return x;
 }
@@ -512,15 +530,15 @@ void pulse_led(uint16_t t, uint8_t led){
 void objed_prekazku(uint16_t x) {
   zatoc('R', 100, 200);
   if (prekazka()>(PREKAZKA+500)) {
-    ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
+    ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R);
     delay(x);
     zatoc('L', 100, 200);
     if (prekazka()>PREKAZKA){
-      ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
+      ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R);
       delay(x/2);
       zatoc('L', 100, 200);
       while (detekuj_caru(-100)==-100) {
-        ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R, 'f');
+        ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R);
       }
     }
   }
