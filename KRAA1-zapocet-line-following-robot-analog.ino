@@ -76,7 +76,7 @@ void loop() {
       prekazka();
       if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
         // objed_prekazku(500);
-        zastav(1000);
+        //zastav(2000);
       }
       else {digitalWrite(LED_RED, LOW);};
     #endif
@@ -193,20 +193,22 @@ int32_t detekuj_caru(int32_t z) {
   cara_detekovana = false;
   uint32_t soucet_hodnot = 0;
   uint16_t pocet_sens = 0;
+  noInterrupts();
   for(uint8_t i=0; i<NUM_SENSORS; i++){
   sensor[i] = analogRead(SENSOR[i]);
-  sensor[i]=constrain(map(sensor[i], minS[i], maxS[i],0,1000),0,1000);
-  DEBUG_PRINT(sensor[i]);DEBUG_PRINT("\t");
-  if(sensor[i]>500)cara_detekovana = true; //čáru vyhodnocuji od hodnoty 500, potřeba poladit
-    if(sensor[i]>50) { //připočítávám senzory, které zachytí jakous-takous hodnotu, také potřeba poladit
+  sensor[i]=constrain(map(sensor[i], minS[i], maxS[i],1000,0),0,1000);
+  DEBUG_PRINTS(sensor[i]);DEBUG_PRINTS("\t");
+  if(sensor[i]>300)cara_detekovana = true; //čáru vyhodnocuji od hodnoty 500, potřeba poladit
+    if(sensor[i]>60) { //připočítávám senzory, které zachytí jakous-takous hodnotu, také potřeba poladit
     soucet_hodnot += (uint32_t)sensor[i]*1000*i;
     pocet_sens += sensor[i]; //nedává to přesný výsledek, ale mohlo by to obstát
     }
   }
- DEBUG_PRINT("čára:");DEBUG_PRINT(cara_detekovana);DEBUG_PRINT("\t");
- DEBUG_PRINTLN("");
+  interrupts();
+ DEBUG_PRINTS("čára:");DEBUG_PRINTS(cara_detekovana);DEBUG_PRINTS("\t");
+ DEBUG_PRINTSLN("");
   int32_t x = (sensor[0]>500 && sensor[4]>500) ? -100 : (cara_detekovana) ? soucet_hodnot/pocet_sens : z;
- DEBUG_PRINT("Pozice:");DEBUG_PRINT(x);DEBUG_PRINT("\t");
+ DEBUG_PRINTS("Pozice:");DEBUG_PRINTS(x);DEBUG_PRINTS("\t");
   return x;
 }
 
@@ -227,23 +229,22 @@ int32_t detekuj_caru(int32_t z) {
 void jedeme_s_PID() {
   pozice = detekuj_caru(pozice); //načti aktuální pozici
 //  DEBUG_PRINT("pos2: ");DEBUG_PRINT(pozice);DEBUG_PRINT("\t");
-  if (pozice == -100){zastav(1000);DEBUG_PRINTLN("Cílová čára");}//STOP
+  if (pozice == -100){/*zastav(1000);*/DEBUG_PRINTLN("Cílová čára");}//STOP
   else {
   int16_t error = STRED_SENZORU - pozice; //orientovaná odchylka od středu dráhy
   //DEBUG_PRINT("Odchylka: "); DEBUG_PRINTLN(error);
-   #ifndef DISABLETRIMR
-   Kp = (nacti_trimr(1))/5000.000000;
-   DEBUG_PRINT("Kp: ");DEBUG_PRINT(Kp);DEBUG_PRINT("\t");
-   Ki = (nacti_trimr(2))/5000.00000;
-   DEBUG_PRINTLN(Kd);
-   #endif
+  #ifndef DISABLETRIMR
+   Kd = (nacti_trimr(1))/5000.000;
+   Kp = (nacti_trimr(2))/3500.000;
+  #endif
   P = error;
   casAktualni = millis();
-  casVzorkovaci = (float)(casAktualni - casMinuly)/1000;
+  casVzorkovaci = (float)(casAktualni - casMinuly)/75;
   I += error*casVzorkovaci;
   D = (error - lastError)/casVzorkovaci;
   int16_t korekce_rychlosti = P*Kp + I*Ki + D*Kd; //výpočet PID s měřením 
-  //DEBUG_PRINT("Kd: ");DEBUG_PRINT(Kd);DEBUG_PRINT("\t");  DEBUG_PRINT("Ki*1000: ");DEBUG_PRINTLN(Ki*1000);
+  DEBUG_PRINTT("Rychlost: ");DEBUG_PRINTT(MAX_SPEED_L); DEBUG_PRINTT("\t"); DEBUG_PRINTT("Kp: ");DEBUG_PRINTT(Kp); DEBUG_PRINTT("\t"); DEBUG_PRINTT("1000Ki: ");DEBUG_PRINTT(Ki*1000);DEBUG_PRINTT("\t");
+  DEBUG_PRINTT("1000Kd: ");DEBUG_PRINTT(Kd*1000);DEBUG_PRINTT("\t");DEBUG_PRINTT("Vzork. čas (s): "); DEBUG_PRINTTLN(casVzorkovaci); 
   lastError = error;
   casMinuly = casAktualni;
 
@@ -256,9 +257,9 @@ void jedeme_s_PID() {
   uint8_t rychlost_R = constrain(MED_SPEED_R - korekce_rychlosti,MIN_SPEED,MAX_SPEED_R);
    
   ovladani_motoru(rychlost_L, rychlost_R);
-
+  delayMicroseconds(pauza); //hodnota pro LGT8F328, z nějakého důvodu se to bez pauzy chová, jako by to naopak nestíhalo...
   //DEBUG_PRINT("Pozice: ");DEBUG_PRINTLN(error);
-  //DEBUG_PRINT("Trimr/100: ");DEBUG_PRINTLN(koef*100);
+  //DEBUG_PRINTT("Trimr/100: ");DEBUG_PRINTTLN(koef*100);
   }
 }
 
@@ -342,7 +343,7 @@ uint16_t prekazka() {
   digitalWrite(HC_TRIG, HIGH);
   delayMicroseconds(5);
   digitalWrite(HC_TRIG, LOW);
-  uint16_t odezva = pulseIn(HC_ECHO, HIGH, 5000);
+  uint16_t odezva = pulseIn(HC_ECHO, HIGH, 7000);
   odezva = (odezva == 0) ? 10000 : odezva;
   DEBUG_PRINT("Překážka: ");DEBUG_PRINTLN(odezva);
 //  #else
@@ -428,13 +429,13 @@ void kalibrace() {
   DEBUG_PRINTLN("Kalibrace - sken senzorů...");
   stbyoff(true);
   uint32_t time0 = millis();
-  uint32_t time1 = time0;
+//  uint32_t time1 = time0;
   for(uint8_t i=0; i<NUM_SENSORS; i++){
     sensor[i]=analogRead(SENSOR[i]);
     minS[i]=sensor[i];
     maxS[i]=sensor[i];
     }
-  while((millis()-time0)<=5000){
+  while((millis()-time0)<=2000){
     for(byte i=0; i<NUM_SENSORS; i++){
       sensor[i]=analogRead(SENSOR[i]);
       if(sensor[i]<minS[i]) minS[i]=sensor[i];
@@ -484,7 +485,7 @@ void stbyoff(boolean x){
 boolean kontrola_kalibrace(){
   boolean x = true;
   for (uint8_t i=0; i<NUM_SENSORS;i++){
-    if (maxS[i] - minS[i] < 300) {x=false;}
+    if (maxS[i] - minS[i] < 150) {x=false;}
   }
   if (x) {
     DEBUG_PRINTLN("Kalibrace OK");
