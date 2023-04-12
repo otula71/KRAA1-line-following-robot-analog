@@ -27,15 +27,9 @@ void setup() {
   pinMode(LED_BLUE, OUTPUT);
   for(uint8_t i=0;i<NUM_SENSORS;i++){pinMode(SENSOR[i], INPUT);}
   stbyoff(false);
-  //servo_oci.attach(SERVO);
   #ifdef DEBUG
       Serial.begin(9600);
   #endif
-//    #else
-      #ifndef BEZULTRAZVUKU
-      pinMode(HC_TRIG, OUTPUT);
-      pinMode(HC_ECHO, INPUT);
-      #endif
 
   while (!kontrola_kalibrace()){kalibrace();}
   
@@ -72,14 +66,6 @@ void loop() {
   }
   
   if (onoff) {
-    #ifndef BEZULTRAZVUKU
-      prekazka();
-      if (prekazka()<PREKAZKA){digitalWrite(LED_RED, HIGH);
-        // objed_prekazku(500);
-        //zastav(2000);
-      }
-      else {digitalWrite(LED_RED, LOW);};
-    #endif
     #ifndef KACENA
       jedeme_s_PID(); //jedeme
     #else
@@ -257,7 +243,7 @@ void jedeme_s_PID() {
   uint8_t rychlost_R = constrain(MED_SPEED_R - korekce_rychlosti,MIN_SPEED,MAX_SPEED_R);
    
   ovladani_motoru(rychlost_L, rychlost_R);
-  delayMicroseconds(pauza); //hodnota pro LGT8F328, z nějakého důvodu se to bez pauzy chová, jako by to naopak nestíhalo...
+  delayMicroseconds(pauza); //hodnota původně pro LGT8F328, z nějakého důvodu se to bez pauzy chová, jako by to naopak nestíhalo... (i Nano)
   //DEBUG_PRINT("Pozice: ");DEBUG_PRINTLN(error);
   //DEBUG_PRINTT("Trimr/100: ");DEBUG_PRINTTLN(koef*100);
   }
@@ -295,63 +281,6 @@ void jedeme_stupid() {
 }
 #endif
 
-/*************************************************************************
-* Název funkce: zatoc
-**************************************************************************
-* Toto je funkce do foroty pro odbočování, zadá se směr, rozdíl rychlosti
-* a doba odbočování
-* 
-* Parametry:
-*  char L|R
-*  int rychlost (změna)
-*  int cas (doba v ms, po kterou bude zatáčet)
-* 
-* Vrací:
-*  none
-*************************************************************************/
-void zatoc(char smer, uint8_t spd, uint16_t cas) {
-  switch(smer) {
-    case 'L':
-      ovladani_motoru(constrain(MED_SPEED_L-spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R+spd,MIN_SPEED, MAX_SPEED_R));
-      delay(cas);
-      break;
-    case 'R':
-      ovladani_motoru(constrain(MED_SPEED_L+spd,MIN_SPEED, MAX_SPEED_L), constrain(MED_SPEED_R-spd,MIN_SPEED, MAX_SPEED_R));
-      delay(cas);
-      break;
-  }
-}
-
-
-/*************************************************************************
-* Název funkce: prekazka
-**************************************************************************
-* Funkce pro detekci překážky na trase
-* pomocí ultrazvukového senzoru HC-SR04
-* 
-* Parametry:
-*  none
-* 
-* Vrací:
-*  uint: vzdálenost předmětu (reálně čas odezvy)
-*************************************************************************/
-#ifndef BEZULTRAZVUKU
-uint16_t prekazka() {
-//  #ifndef DEBUG 
-  digitalWrite(HC_TRIG, LOW);
-  delayMicroseconds(2);
-  digitalWrite(HC_TRIG, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(HC_TRIG, LOW);
-  uint16_t odezva = pulseIn(HC_ECHO, HIGH, 7000);
-  odezva = (odezva == 0) ? 10000 : odezva;
-  DEBUG_PRINT("Překážka: ");DEBUG_PRINTLN(odezva);
-//  #else
-//  uint16_t odezva = 10000;
-//  #endif
-  return odezva;
-}
-#endif
 
 /*************************************************************************
 * Název funkce: nacti_trimr(1|2)
@@ -378,35 +307,6 @@ uint16_t nacti_trimr(uint8_t x) {
   }
 }
 #endif
-/*************************************************************************
-* Název funkce: rozhledni_se
-**************************************************************************
-* Funkce pro zjištění vzdálenosti možné překážky  
-* 
-* Parametry:
-*  char L|R|S - směr pohledu vlevo|vpravo|rovně
-* 
-* Vrací:
-*  uint16_t: vzdálenost objektu v zadaném směru
-*************************************************************************
-uint16_t rozhledni_se(char S) {
-  switch (S) {
-    case 'L':
-      servo_oci.write(KUK_VLEVO);
-      return prekazka();
-      servo_oci.write(KUK_ROVNE);
-      break;
-    case 'R':
-      servo_oci.write(KUK_VPRAVO);
-      return prekazka();
-      servo_oci.write(KUK_ROVNE);
-      break;
-    default:
-      return prekazka();
-      break;
-    }
-  }
-  */
 
 /*************************************************************************
 * Název funkce: kalibrace
@@ -516,32 +416,3 @@ void pulse_led(uint16_t t, uint8_t led){
     while((millis()-time0)<=t){digitalWrite(led, HIGH);delay(20);digitalWrite(led, LOW);delay(300);}
 }
 
-/*************************************************************************
-* Název funkce: objed_prekazku(uint čas)
-**************************************************************************
-* Snaží se objet překážku  
-* 
-* Parametry:
-*  uint čas v ms, po kterou pojede směrem doprava
-* 
-* Vrací:
-*  none
-*************************************************************************/
-#ifndef BEZULTRAZVUKU
-void objed_prekazku(uint16_t x) {
-  zatoc('R', 100, 200);
-  if (prekazka()>(PREKAZKA+500)) {
-    ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R);
-    delay(x);
-    zatoc('L', 100, 200);
-    if (prekazka()>PREKAZKA){
-      ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R);
-      delay(x/2);
-      zatoc('L', 100, 200);
-      while (detekuj_caru(-100)==-100) {
-        ovladani_motoru(MAX_SPEED_L, MAX_SPEED_R);
-      }
-    }
-  }
-}
-#endif
