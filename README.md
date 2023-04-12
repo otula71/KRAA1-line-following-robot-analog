@@ -18,6 +18,8 @@ Pokud byste dávali čidel ještě více, budete možná muset jít ještě vý�
 
 ![TCRT5000](pictures/IMG_0260.jpg)
 
+Co se týká softwareové části, čidlům je přiřazen index od 0 do 4000 a dle polohy čáry se získaná hodnota pohybuje mezi těmito hranicemi. Pokud senzory čáru nevidí, tak funkce vrací poslední přečtenou hodnotu (může to nastat mezi senzory, pokud nejsou dostatečně blízko sebe, nebo pokud se čtecí modul dostane úplně mimo čáru, což je sice nechtěná situace, ale přihodit se může; robotek poté zatáčí, až se dostane zpět pod kontrolu).
+
 Pro řízení využívá proporcionálně-integračně-derivační algoritmus. Pomocí trimrů je možno si nastavovat, co je potřeba, a&nbsp;po doladění je možno jejich použití úplně zrušit. Tedy pokud se vám podaří docílit stejných hodnot na baterku a z USB. Když jsem totiž vyladil parametry pomocí trimrů, zadal je natvrdo a trimry vypnul, tak hodnoty neseděly. Ale dá se od nich určitě odrazit. A nebo trimry nachat zapojené, i když hrozí, že si parametry rozhodíte. 
 
 <del>Z důvodu, že jsem napíchnul ultrazvukový senzor na RX pin, je zablokováno jeho použití v ladicím režimu, protože už to tak mám vyleptáno na DPS, ale není problém připojit ho na D3, který jsem plánoval pro servomotorek a zůstal volný...</del>
