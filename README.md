@@ -32,7 +32,7 @@ Součástky:
 <ul>
 <li><a href="https://www.aliexpress.com/item/1005002524993718.html">motor s úchytem a kolem</a> (jsem si naprosto jistý, že <a href="https://www.aliexpress.com/item/32851946942.html">TT motorky</a> určitě nechcete). Já jsem nakonec použil <a href="https://www.aliexpress.com/item/32809043739.html">tahle kola</a></li>
 <li><a href="https://www.aliexpress.com/item/32465698640.html">H-můstek TB6612FNG</a></li>
-  <li>5&times; <a href="https://www.aliexpress.com/item/1005005214201551.html">TCRT5000</a> + rezistory 10 k&ohm; + cca 700 &ohm; (nebo <a href="https://www.aliexpress.com/item/1005001593848689.html">tohle</a>)</li>
+  <li>5&times; <a href="https://www.aliexpress.com/item/1005005214201551.html">TCRT5000</a> + rezistory 10 k&ohm; + cca 700 &ohm; (nebo <a href="https://www.aliexpress.com/item/1005001593848689.html">tohle</a>). Také můžete zkusit <a href="https://www.aliexpress.com/item/1005001650888947.html">tohle oblíbené 8kanálové čidlo</a>, ale můžete poté být &mdash; tak jako já &mdash; zklamáni. Výkon diod je velmi malý a potřebujete ho mít velmi blízko u země, což je možné pouze u kvalitní pevné a rovné podložky. Pokud byste s tím chtěli, tak jako já, jezdit po dlažbě či po papíru, se zlou se potážete.</li>
 <li>Arduino Nano, <del>UZ modul HC SR-04,</del> tlačítko, 2 spínače&hellip;</li>
   <li><a href="https://www.aliexpress.com/item/32993737904.html">Držák na 2 lithiovky</a> a ty baterky k tomu. Já používám 18650, ale pokud máte 14500, ušetříte na hmotnosti a vejdou se vám do držáku na AA.</li>
 </ul>
