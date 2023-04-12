@@ -28,7 +28,7 @@ Schéma (ještě původní s ultrazvukem a koupenými IR moduly) vypadá nějak 
 Součástky:
 
 <ul>
-<li><a href="https://www.aliexpress.com/item/1005002524993718.html">motor s úchytem a kolem</a> (jsem si naprosto jistý, že <a href="https://www.aliexpress.com/item/32851946942.html">TT motorky</a> určitě nechcete)</li>
+<li><a href="https://www.aliexpress.com/item/1005002524993718.html">motor s úchytem a kolem</a> (jsem si naprosto jistý, že <a href="https://www.aliexpress.com/item/32851946942.html">TT motorky</a> určitě nechcete). Já jsem nakonec použil <a href="https://www.aliexpress.com/item/32809043739.html">tahle kola</a></li>
 <li><a href="https://www.aliexpress.com/item/32465698640.html">H-můstek TB6612FNG</a></li>
   <li>5&times; <a href="https://www.aliexpress.com/item/1005005214201551.html">TCRT5000</a> + rezistory 10 k&ohm; + cca 700 &ohm; (nebo <a href="https://www.aliexpress.com/item/1005001593848689.html">tohle</a>)</li>
 <li>Arduino Nano, <del>UZ modul HC SR-04,</del> tlačítko, 2 spínače&hellip;</li>
