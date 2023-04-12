@@ -24,11 +24,11 @@ Schéma (ještě původní s ultrazvukem a koupenými IR moduly) vypadá nějak 
 Součástky:
 
 <ul>
-<li><a href="https://www.aliexpress.com/item/1005002524993718.html">motor s úchytem a kolem</a></li>
+<li><a href="https://www.aliexpress.com/item/1005002524993718.html">motor s úchytem a kolem</a> (jsem si naprosto jistý, že <a href="https://www.aliexpress.com/item/32851946942.html">TT motorky</a> určitě nechcete)</li>
 <li><a href="https://www.aliexpress.com/item/32465698640.html">H-můstek TB6612FNG</a></li>
-<li>5&times; TCRT5000 + rezistory 10 k&ohm; + cca 700 &ohm;</li>
+  <li>5&times; <a href="https://www.aliexpress.com/item/1005005214201551.html">TCRT5000</a> + rezistory 10 k&ohm; + cca 700 &ohm; (nebo <a href="https://www.aliexpress.com/item/1005001593848689.html">tohle</a>)</li>
 <li>Arduino Nano, <del>UZ modul HC SR-04,</del> tlačítko, 2 spínače&hellip;</li>
-<li>Držák na 2 lithiovky a ty baterky k tomu. Já používám 18650, ale pokud máte 14500, ušetříte na hmotnosti a vejdou se vám do držáku na AA.</li>
+  <li><a href="https://www.aliexpress.com/item/32993737904.html">Držák na 2 lithiovky</a> a ty baterky k tomu. Já používám 18650, ale pokud máte 14500, ušetříte na hmotnosti a vejdou se vám do držáku na AA.</li>
 </ul>
 
 To nejdůležitější na závěr. Pokud si budete procházet kód, můžete si všimnout, že před načítáním čidel vypínám přerušení <code>noInterrupts();</code> a pak ho zase zapínám. Další prapodivností je přidaný <code>delay</code> na konci každého cyklu. Přijít na to mi trvalo dost dlouho, a asi bych něco takového vůbec nezkoušel, nebýt toho, že jsem zkoušel mikrokontroler LGT8F328, který je rychlejší než Arduino. Jenže paradoxně se choval, jakoby vůbec nestíhal. Až mě napadlo zkusit doplnit pauzu&hellip; A&nbsp;pak jsem doplnil pauzu i Arduinu, když jsem přidal rychlejší motorky &mdash; bez ní jsem nebyl schopen ujet ani metr přes veškeré snahy o doladění. A&nbsp;s&nbsp;pauzou se najednou robotek přilepil k&nbsp;čáře. No, tak ne, ale sledování čáry je o několik levelů lepší. Je lepší o tolik, že mi drží lajnu lépe, než když měl předtím motorky 200rpm. A&nbsp;poslední věc &mdash; znovu zmíním ty senzory. Pokud budete mít senzorů málo, opravdu ty uvnitř nahustěte k sobě, nesnažte se o žádné lineární rozložení.
