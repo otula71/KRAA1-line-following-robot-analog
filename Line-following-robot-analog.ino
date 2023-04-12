@@ -329,7 +329,7 @@ void kalibrace() {
   DEBUG_PRINTLN("Kalibrace - sken senzorů...");
   stbyoff(true);
   uint32_t time0 = millis();
-//  uint32_t time1 = time0;
+
   for(uint8_t i=0; i<NUM_SENSORS; i++){
     sensor[i]=analogRead(SENSOR[i]);
     minS[i]=sensor[i];
