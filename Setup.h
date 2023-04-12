@@ -5,17 +5,11 @@
 //#define DEBUG_SENZORY
 //#define DEBUG_TRIMRY
 //#define KACENA      // kačení styl jízdy
-#define BEZULTRAZVUKU // kašle na chodce
 //#define DISABLETRIMR //nebude načítat hodnoty z trimrů
 
 /*************************************************************************
 * připojení k Arduinu
 *************************************************************************/
-//#ifndef DEBUG
-const uint8_t HC_TRIG = 0;
-const uint8_t HC_ECHO = 2;
-//#endif
-//const uint8_t SERVO = 3;
 const uint8_t ONOFF = 4;
 const uint8_t ENA = 5;   //motory
 const uint8_t ENB = 6;
@@ -74,28 +68,17 @@ uint16_t sensor[NUM_SENSORS] = {0, 0, 0, 0, 0};
 uint16_t minS[NUM_SENSORS];
 uint16_t maxS[NUM_SENSORS];
 uint8_t kalibracni_rychlost = 120;
-const uint16_t PREKAZKA = 1000; //vzdálenost, od které je vyhodnocen 
-                                //předmět jako překážka
 
-/*************************************************************************
-* Servo motorek pro čidlo vzdálenosti
-*************************************************************************
-#include <Servo.h> 
-Servo servo_oci;
-const uint8_t KUK_VPRAVO = 140;
-const uint8_t KUK_ROVNE = 90;
-const uint8_t KUK_VLEVO = 40;
-*/
 
 #endif
 
 /*************************************************************************
 * PINOUT Arduino nano
 **************************************************************************
-* D0    HC trigger      (pin RX)
+* D0                    (pin RX)
 * D1                    (pin TX)
-* D2    HC echo 
-* D3 ~  (tady mělo být servo pro natáčení "očiček"
+* D2     
+* D3 ~  
 * D4    tlačítko on/off
 * D5 ~  L298 ENA
 * D6 ~  L298 ENB
