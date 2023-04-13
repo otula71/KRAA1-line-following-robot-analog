@@ -2,7 +2,13 @@
 
 ![robot](pictures/IMG_0188.jpg)
 
-Robotek na experimentální DPS, který sleduje čáru <del>a zastaví před překážkou &mdash; dle zadání na zápočet do Robotiky a automatizace</del>. Postaven na Arduino Nano <del>nebo kompatibilním GT8F328P</del>, řadiči motorů TB6612FNG, používá 5 IR čidel TCRT5000, <del>UZ čidlo HC SR-04</del>, 6V motorky N20 1000rpm, 2 trimry pro ladění parametrů a 2 LED (modrou a červenou) pro signalizaci různých stavů. Dále je připojeno tlačítko a 2 spínače. Jeden spínač pro napájení digitální části, druhý spínač pro napájení motorků (Toshiba v dokumentaci k TB6612 píše, že nikdy nemá být připojeno napájení motorků dříve, než je pod napětím digitální část. Když jsem poprvé připojil na můstek napětí na motorovou část, přičemž logická část nebyla napájena, explodovala jedna ze součástek. Na stranu druhou se mi párkrát povedlo omylem vypnout prvně napájení elektroniky a přežilo to. Ale lepší to asi zbytečně nepokoušet). Tlačítko slouží pro spuštění/zastavení jízdy.
+Robotek na experimentální DPS, který sleduje čáru <del>a zastaví před překážkou &mdash; dle zadání na zápočet do Robotiky a automatizace</del>. Postaven na Arduino Nano <del>nebo kompatibilním GT8F328P</del>, řadiči motorů TB6612FNG, používá 5 IR čidel TCRT5000, <del>UZ čidlo HC SR-04</del>, 6V motorky N20 1000rpm, 2 trimry pro ladění parametrů a 2 LED (modrou a červenou) pro signalizaci různých stavů. Dále je připojeno tlačítko a 2 spínače. Jeden spínač pro napájení digitální části, druhý spínač pro napájení motorků (Toshiba v dokumentaci k TB6612 píše, že nikdy nemá být připojeno napájení motorků dříve, než je pod napětím digitální část. Když jsem poprvé připojil na můstek napětí na motorovou část, přičemž logická část nebyla napájena, explodovala jedna ze součástek. Na stranu druhou se mi párkrát povedlo omylem vypnout prvně napájení elektroniky a přežilo to. Ale lepší to asi zbytečně nepokoušet). 
+
+![bum](pictures/IMG_0116.JPG)
+
+Tlačítko slouží pro spuštění/zastavení jízdy.
+
+
 
 ![tlačítka](pictures/IMG_0190.jpg)
 
@@ -16,7 +22,7 @@ I tahle úprava nakonec ale skončila zpět v šuplíku. Obětoval jsem oboustra
 
 Pokud byste dávali čidel ještě více, budete možná muset jít ještě výše. Ani s takovým odporem pak není potřeba být čidly moc u země, právě naopak, původní výšku jsem ještě navyšoval. Ne proto, že by to nefungovalo, ale když mají čidla od čtené linky větší odstup, mění se získaná hodnota plynuleji, protože se sousední senzory navzájem ruší, což je ale pro nás žádané. Chce to vyzkoušet, já mám součástky cca 1&nbsp;cm od země. A ještě pozor na ta TCRTéčka &mdash; mám je ze dvou zdrojů a nejsou stejně smontovaná, takže si každou součástku před připojením změřte. Nejsnáze měřákem na diody. Ten fototranzistor je potřeba osvítit tou UV LEDkou, jinak samozřejmě nic neukáže.
 
-![TCRT5000](pictures/IMG_0260.jpg)
+![TCRT5000](pictures/IMG_0263.jpg)
 
 Co se týká softwareové části, čidlům je přiřazen index od 0 do 4000 a dle polohy čáry se získaná hodnota pohybuje mezi těmito hranicemi. Pokud senzory čáru nevidí, tak funkce vrací poslední přečtenou hodnotu (může to nastat mezi senzory, pokud nejsou dostatečně blízko sebe, nebo pokud se čtecí modul dostane úplně mimo čáru, což je sice nechtěná situace, ale přihodit se může; robotek poté zatáčí, až se dostane zpět pod kontrolu).
 
@@ -42,3 +48,7 @@ To nejdůležitější na závěr. Pokud si budete procházet kód, můžete si 
 [![jízda](https://img.youtube.com/vi/TjHjLK-f2Oc/0.jpg)](https://www.youtube.com/watch?v=TjHjLK-f2Oc)
 
 PS: Pro ladění používám všechny ty možné <code>DEBUG_PRINT</code> příkazy, a protože jsem potřeboval hodně výstupů, rozdělil jsem si to na výstupy senzorů a výstupy trimrů, i tak jsem každou chvíli něco zakomentovával a upravoval. Na začátku <code>Setup.h</code> se to aktivuje či deaktivuje.
+
+A takhle jsem to vyráběl &mdash; na 20 let staré experimentální desce za pomoci laku na nehty, odvápňovacího roztoku na konvice a peroxidu vodíku&hellip;
+
+![výroba](pictures/IMG_0110.JPG)
