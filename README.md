@@ -45,7 +45,9 @@ Součástky:
 
 To nejdůležitější na závěr. Pokud si budete procházet kód, můžete si všimnout, že před načítáním čidel vypínám přerušení <code>noInterrupts();</code> a pak ho zase zapínám. Další prapodivností je přidaný <code>delay</code> na konci každého cyklu. Přijít na to mi trvalo dost dlouho, a asi bych něco takového vůbec nezkoušel, nebýt toho, že jsem zkoušel mikrokontroler LGT8F328, který je rychlejší než Arduino. Jenže paradoxně se choval, jakoby vůbec nestíhal. Až mě napadlo zkusit doplnit pauzu&hellip; A&nbsp;pak jsem doplnil pauzu i Arduinu, když jsem přidal rychlejší motorky &mdash; bez ní jsem nebyl schopen ujet ani metr přes veškeré snahy o doladění. A&nbsp;s&nbsp;pauzou se najednou robotek přilepil k&nbsp;čáře. No, tak ne, ale sledování čáry je o několik levelů lepší. Je lepší o tolik, že mi drží lajnu lépe, než když měl předtím motorky 200rpm. A&nbsp;poslední věc &mdash; znovu zmíním ty senzory. Pokud budete mít senzorů málo, opravdu ty uvnitř nahustěte k sobě, nesnažte se o žádné lineární rozložení.
 
-[![jízda](https://img.youtube.com/vi/TjHjLK-f2Oc/0.jpg)](https://www.youtube.com/watch?v=TjHjLK-f2Oc)
+
+
+[![jízda](https://img.youtube.com/vi/zd_5dN1qyaY/0.jpg)](https://www.youtube.com/watch?v=zd_5dN1qyaY)
 
 PS: Pro ladění používám všechny ty možné <code>DEBUG_PRINT</code> příkazy, a protože jsem potřeboval hodně výstupů, rozdělil jsem si to na výstupy senzorů a výstupy trimrů, i tak jsem každou chvíli něco zakomentovával a upravoval. Na začátku <code>Setup.h</code> se to aktivuje či deaktivuje.
 
